@@ -62,6 +62,11 @@ main {
     padding: 10px;
 }
 
+#glyphbrowser.active {
+    border: 2px solid #0066cc;
+    border-right: 2px solid #0066cc;
+}
+
 #splitter {
     width: 5px;
     background: #ccc;
@@ -79,6 +84,10 @@ main {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+#glypheditor.active {
+    border: 2px solid #0066cc;
 }
 
 footer {
@@ -100,7 +109,8 @@ footer a {
 .glyph-grid {
     display: grid;
     gap: 2px;
-    grid-template-columns: repeat(16, 20px);
+    grid-template-columns: repeat(auto-fill, 20px);
+    justify-content: start;
 }
 
 .glyph {

@@ -4,6 +4,7 @@ class FontEditor {
         this.glyphs = [];
         this.currentGlyph = 0;
         this.selectedPixel = { x: 0, y: 0 };
+        this.editMode = false; // false = browse, true = edit
         
         // Font parameters - will be detected/configurable
         this.offset = 0;
@@ -14,6 +15,7 @@ class FontEditor {
         this.createEmptyFont();
         this.renderGlyphBrowser();
         this.renderGlyphEditor();
+        this.updateActivePanel();
     }
     
     initEventListeners() {
@@ -34,6 +36,9 @@ class FontEditor {
         document.getElementById('about-close').onclick = () => this.hideAbout();
         
         document.addEventListener('keydown', (e) => this.handleKeyboard(e));
+        
+        // Splitter functionality
+        this.initSplitter();
         
         // Prevent default drag behavior
         document.addEventListener('dragover', (e) => e.preventDefault());
@@ -191,7 +196,7 @@ class FontEditor {
         
         switch(e.key) {
             case 'ArrowUp':
-                if (e.shiftKey) {
+                if (this.editMode) {
                     this.selectedPixel.y = Math.max(0, this.selectedPixel.y - 1);
                     this.renderGlyphEditor();
                 } else {
@@ -200,16 +205,16 @@ class FontEditor {
                 e.preventDefault();
                 break;
             case 'ArrowDown':
-                if (e.shiftKey) {
+                if (this.editMode) {
                     this.selectedPixel.y = Math.min(this.height - 1, this.selectedPixel.y + 1);
                     this.renderGlyphEditor();
                 } else {
-                    this.selectGlyph(Math.min(255, this.currentGlyph + 16));
+                    this.selectGlyph(Math.min(this.glyphs.length - 1, this.currentGlyph + 16));
                 }
                 e.preventDefault();
                 break;
             case 'ArrowLeft':
-                if (e.shiftKey) {
+                if (this.editMode) {
                     this.selectedPixel.x = Math.max(0, this.selectedPixel.x - 1);
                     this.renderGlyphEditor();
                 } else {
@@ -218,20 +223,43 @@ class FontEditor {
                 e.preventDefault();
                 break;
             case 'ArrowRight':
-                if (e.shiftKey) {
+                if (this.editMode) {
                     this.selectedPixel.x = Math.min(this.width - 1, this.selectedPixel.x + 1);
                     this.renderGlyphEditor();
                 } else {
-                    this.selectGlyph(Math.min(255, this.currentGlyph + 1));
+                    this.selectGlyph(Math.min(this.glyphs.length - 1, this.currentGlyph + 1));
                 }
                 e.preventDefault();
                 break;
             case ' ':
-                this.togglePixel(this.selectedPixel.x, this.selectedPixel.y);
+                if (this.editMode) {
+                    this.togglePixel(this.selectedPixel.x, this.selectedPixel.y);
+                }
                 e.preventDefault();
                 break;
             case 'Enter':
-                // Could be used for "save glyph" later
+                this.editMode = true;
+                this.renderGlyphEditor();
+                this.updateActivePanel();
+                e.preventDefault();
+                break;
+            case 'Escape':
+                this.editMode = false;
+                this.renderGlyphEditor();
+                this.updateActivePanel();
+                e.preventDefault();
+                break;
+            case 'Delete':
+                if (!this.editMode) {
+                    // Clear current glyph
+                    for (let y = 0; y < this.height; y++) {
+                        for (let x = 0; x < this.width; x++) {
+                            this.glyphs[this.currentGlyph][y][x] = 0;
+                        }
+                    }
+                    this.renderGlyphEditor();
+                    this.updateGlyphInBrowser();
+                }
                 e.preventDefault();
                 break;
         }
@@ -406,6 +434,44 @@ class FontEditor {
     
     hideAbout() {
         document.getElementById('about-modal').style.display = 'none';
+    }
+    
+    updateActivePanel() {
+        const browser = document.getElementById('glyphbrowser');
+        const editor = document.getElementById('glypheditor');
+        
+        if (this.editMode) {
+            browser.classList.remove('active');
+            editor.classList.add('active');
+        } else {
+            browser.classList.add('active');
+            editor.classList.remove('active');
+        }
+    }
+    
+    initSplitter() {
+        const splitter = document.getElementById('splitter');
+        const browser = document.getElementById('glyphbrowser');
+        let isResizing = false;
+        
+        splitter.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', () => {
+                isResizing = false;
+                document.removeEventListener('mousemove', handleMouseMove);
+            });
+            e.preventDefault();
+        });
+        
+        function handleMouseMove(e) {
+            if (!isResizing) return;
+            const rect = document.querySelector('main').getBoundingClientRect();
+            const newWidth = e.clientX - rect.left;
+            if (newWidth > 200 && newWidth < rect.width - 200) {
+                browser.style.width = newWidth + 'px';
+            }
+        }
     }
     
     updateCount() {

@@ -4,42 +4,74 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a bitmap font editor built with modern browser technologies (HTML/JavaScript/CSS). It's a client-side only application with no backend or external dependencies.
+**fed** is a bitmap font editor built with modern browser technologies (HTML/JavaScript/CSS). It's a client-side only application with no backend or external dependencies, designed for retro computing font editing.
 
 ## Development Commands
 
 Since this is a pure HTML/JS/CSS project with no build system:
 - **Development**: Open `index.html` directly in a browser or use a simple HTTP server
-- **Testing**: Manual testing in browser
+- **Testing**: Manual testing in browser (load .fnt files, edit pixels, export)
 - **Deployment**: Static file hosting (copy files to web server)
+
+## File Structure
+
+- `index.html` - Main HTML structure with Holy Grail layout
+- `fed.css` - Minimalistic styling for layout and components  
+- `fed.js` - Complete application logic (FontEditor class)
 
 ## Architecture
 
 ### Core Components
-Based on the project specification, the application follows these architectural patterns:
 
-1. **Holy Grail Layout**: Full viewport layout with fixed header/footer and flexible main content
-   - Header: Title and toolbar (New, Open, Save, Export, Font Info, About)
-   - Main: Split between GlyphBrowser (left) and GlyphEditor (right) with draggable splitter
-   - Footer: Copyright and links
+1. **FontEditor Class** (`fed.js`): Main application controller
+   - Font data management and parsing
+   - Glyph rendering and editing logic
+   - File I/O operations
+   - Keyboard and mouse event handling
 
-2. **Main Features**:
-   - **GlyphBrowser**: Grid view of all glyphs with keyboard navigation (arrows, ENTER, DEL)
-   - **GlyphEditor**: Pixel-level editing with keyboard controls (arrows, SPACE, ENTER, ESC)
-   - **File Operations**: New, Open (file input), Save (download), Export (.bin, .png)
-   - **Font Info Modal**: Configure offset, width, height parameters
+2. **Layout** (`index.html`/`fed.css`):
+   - **Header**: Title + toolbar (📄 New, 📂 Open, 💾 Save, 📤 Export, ℹ️ Font Info, ❓ About)
+   - **Main**: Split view with draggable splitter
+     - Left: GlyphBrowser (grid of all glyphs)
+     - Right: GlyphEditor (pixel-level editing)
+   - **Footer**: Copyright and links
+   - **Modals**: Font Info and Export PNG dialogs
+
+### Key Features Implemented
+
+1. **File Operations**:
+   - New: Create empty font
+   - Open: Load .fnt/.bin files via file input or drag-drop
+   - Save: Export as binary .fnt file (Uint8Array download)
+   - Export: Generate PNG font sheets with customizable layout
+
+2. **Font Editing**:
+   - Variable font dimensions (configurable width/height)
+   - Pixel-perfect editing with visual feedback
+   - Real-time glyph preview updates
+   - Support for fonts with any width (multi-byte rows)
+
+3. **Navigation**:
+   - **Arrow keys**: Navigate between glyphs
+   - **Shift+Arrow keys**: Move pixel cursor within glyph
+   - **Space**: Toggle pixel on/off
+   - **Mouse**: Click glyphs/pixels for selection
+
+4. **Font Format Support**:
+   - Flexible glyph dimensions (8x16, 16x16, etc.)
+   - Big-endian bit packing
+   - Configurable file offset
+   - Auto-detection of glyph count based on file size
+
+### Tested Font Formats
+
+- `eng.fnt`: 256 glyphs, 8x16 pixels (16 bytes per glyph)
+- `sans.fnt`: 360 glyphs, 16x16 pixels (32 bytes per glyph, Korean font)
 
 ### Design Principles
-- Minimalistic approach with no visual effects
-- Keyboard-driven interface for efficient editing
-- No scrollbars except in GlyphBrowser and GlyphEditor
-- Drag and drop file opening support
 
-### Font Format
-- Default: 8x8 pixel glyphs
-- Configurable width/height
-- Binary format with configurable offset
-- Count calculation: (filesize - offset) / (((width/8) + 1) * height)
-
-## File Structure
-Currently only contains README.md - implementation files will be created as HTML/JS/CSS files following the specification.
+- Minimalistic UI with retro emoji touches
+- Keyboard-first interface for efficient editing
+- No external dependencies
+- Cross-browser compatibility
+- Responsive canvas-based rendering
