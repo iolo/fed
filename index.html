@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fed - Bitmap Font Editor</title>
+    <link rel="stylesheet" href="fed.css">
+</head>
+<body>
+    <header>
+        <h1>fed</h1>
+        <div class="toolbar">
+            <button id="new">New</button>
+            <button id="open">Open</button>
+            <button id="save">Save</button>
+            <button id="export">Export</button>
+            <button id="fontinfo">Font Info</button>
+            <button id="about">About</button>
+        </div>
+    </header>
+    
+    <main>
+        <div id="glyphbrowser"></div>
+        <div id="splitter"></div>
+        <div id="glypheditor"></div>
+    </main>
+    
+    <footer>
+        <span>&copy; 2025</span>
+        <a href="https://github.com">GitHub</a>
+    </footer>
+
+    <div id="fontinfo-modal" class="modal">
+        <div class="modal-content">
+            <h3>Font Info</h3>
+            <label>Offset: <input type="number" id="offset" value="0" min="0"></label>
+            <label>Width: <input type="number" id="width" value="8" min="1" max="32"></label>
+            <label>Height: <input type="number" id="height" value="8" min="1" max="32"></label>
+            <label>Count: <span id="count">0</span></label>
+            <div class="modal-buttons">
+                <button id="fontinfo-ok">OK</button>
+                <button id="fontinfo-cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="fileinput" accept=".bin,.fnt" style="display:none">
+    <script src="fed.js"></script>
+</body>
+</html>
