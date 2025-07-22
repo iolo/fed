@@ -19,10 +19,15 @@ class FontEditor {
     initEventListeners() {
         document.getElementById('open').onclick = () => document.getElementById('fileinput').click();
         document.getElementById('fileinput').onchange = (e) => this.loadFont(e.target.files[0]);
+        document.getElementById('save').onclick = () => this.saveFont();
+        document.getElementById('export').onclick = () => this.showExportDialog();
         
         document.getElementById('fontinfo').onclick = () => this.showFontInfo();
         document.getElementById('fontinfo-ok').onclick = () => this.saveFontInfo();
         document.getElementById('fontinfo-cancel').onclick = () => this.hideFontInfo();
+        
+        document.getElementById('export-ok').onclick = () => this.exportPNG();
+        document.getElementById('export-cancel').onclick = () => this.hideExportDialog();
         
         document.addEventListener('keydown', (e) => this.handleKeyboard(e));
         
@@ -263,6 +268,122 @@ class FontEditor {
         }
         
         this.hideFontInfo();
+    }
+    
+    saveFont() {
+        // Convert glyphs back to Uint8Array
+        const glyphBytes = this.getGlyphBytes();
+        const totalBytes = this.glyphs.length * glyphBytes;
+        const fontData = new Uint8Array(totalBytes);
+        const bytesPerRow = Math.ceil(this.width / 8);
+        
+        for (let g = 0; g < this.glyphs.length; g++) {
+            const glyphOffset = g * glyphBytes;
+            
+            for (let row = 0; row < this.height; row++) {
+                for (let byteIdx = 0; byteIdx < bytesPerRow; byteIdx++) {
+                    let byte = 0;
+                    const startBit = byteIdx * 8;
+                    const endBit = Math.min(startBit + 8, this.width);
+                    
+                    // Pack pixels into byte (big-endian)
+                    for (let bit = startBit; bit < endBit; bit++) {
+                        const bitPos = bit - startBit;
+                        if (this.glyphs[g][row][bit]) {
+                            byte |= (0x80 >> bitPos);
+                        }
+                    }
+                    
+                    fontData[glyphOffset + row * bytesPerRow + byteIdx] = byte;
+                }
+            }
+        }
+        
+        // Create download
+        const blob = new Blob([fontData], { type: 'application/octet-stream' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'font.fnt';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+    
+    showExportDialog() {
+        document.getElementById('export-modal').style.display = 'block';
+    }
+    
+    hideExportDialog() {
+        document.getElementById('export-modal').style.display = 'none';
+    }
+    
+    exportPNG() {
+        const glyphsPerRow = parseInt(document.getElementById('glyphs-per-row').value);
+        const scale = parseInt(document.getElementById('export-scale').value);
+        const hGap = parseInt(document.getElementById('h-gap').value);
+        const vGap = parseInt(document.getElementById('v-gap').value);
+        const bgColor = document.getElementById('bg-color').value;
+        const fgColor = document.getElementById('fg-color').value;
+        
+        const totalGlyphs = this.glyphs.length;
+        const rows = Math.ceil(totalGlyphs / glyphsPerRow);
+        
+        // Calculate canvas size
+        const glyphWidth = this.width * scale;
+        const glyphHeight = this.height * scale;
+        const canvasWidth = glyphsPerRow * glyphWidth + (glyphsPerRow - 1) * hGap;
+        const canvasHeight = rows * glyphHeight + (rows - 1) * vGap;
+        
+        // Create canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+        
+        // Fill background
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+        
+        // Draw glyphs
+        ctx.fillStyle = fgColor;
+        for (let i = 0; i < totalGlyphs; i++) {
+            const row = Math.floor(i / glyphsPerRow);
+            const col = i % glyphsPerRow;
+            
+            const x = col * (glyphWidth + hGap);
+            const y = row * (glyphHeight + vGap);
+            
+            // Draw each pixel of the glyph
+            for (let py = 0; py < this.height; py++) {
+                for (let px = 0; px < this.width; px++) {
+                    if (this.glyphs[i][py][px]) {
+                        ctx.fillRect(
+                            x + px * scale, 
+                            y + py * scale, 
+                            scale, 
+                            scale
+                        );
+                    }
+                }
+            }
+        }
+        
+        // Download PNG
+        canvas.toBlob((blob) => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'font.png';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }, 'image/png');
+        
+        this.hideExportDialog();
     }
     
     updateCount() {

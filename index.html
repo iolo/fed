@@ -10,12 +10,12 @@
     <header>
         <h1>fed</h1>
         <div class="toolbar">
-            <button id="new">New</button>
-            <button id="open">Open</button>
-            <button id="save">Save</button>
-            <button id="export">Export</button>
-            <button id="fontinfo">Font Info</button>
-            <button id="about">About</button>
+            <button id="new">📄 New</button>
+            <button id="open">📂 Open</button>
+            <button id="save">💾 Save</button>
+            <button id="export">📤 Export</button>
+            <button id="fontinfo">ℹ️ Font Info</button>
+            <button id="about">❓ About</button>
         </div>
     </header>
     
@@ -40,6 +40,22 @@
             <div class="modal-buttons">
                 <button id="fontinfo-ok">OK</button>
                 <button id="fontinfo-cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="export-modal" class="modal">
+        <div class="modal-content">
+            <h3>Export PNG</h3>
+            <label>Glyphs per row: <input type="number" id="glyphs-per-row" value="16" min="1" max="32"></label>
+            <label>Scale: <input type="number" id="export-scale" value="2" min="1" max="8"></label>
+            <label>H Gap: <input type="number" id="h-gap" value="1" min="0"></label>
+            <label>V Gap: <input type="number" id="v-gap" value="1" min="0"></label>
+            <label>BG Color: <input type="color" id="bg-color" value="#ffffff"></label>
+            <label>FG Color: <input type="color" id="fg-color" value="#000000"></label>
+            <div class="modal-buttons">
+                <button id="export-ok">📤 Export</button>
+                <button id="export-cancel">Cancel</button>
             </div>
         </div>
     </div>
