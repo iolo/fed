@@ -27,16 +27,14 @@ Bitmap Font Editor
 - Glyph Browser
   - show all glyphs as grid with specfied zoom factor(default:2)
   - Arrow keys to select a glyph
-  - ENTER key to edit a glyph
+  - ENTER key to edit a glyph(switch to editor mode)
   - DEL key to delete a glyph
   - Double Click glyph to select
 - Edit Glyph
   - show th current glyph in pixel grid with specified zoom(default: auto-fit)
   - Arrow keys to select pixel(current pixel should be highlighted)
-  - ENTER key to save and stop editing
+  - ESC key to stop editing(switch to browser mode)
   - SPACE key to toggle pixel
-  - ESC key to stop editing
-    - When changes, confirm cancel, save  or discard chanes
 - Show and edit Font Info
 
 ## User Interface
