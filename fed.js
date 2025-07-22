@@ -5,11 +5,10 @@ class FontEditor {
         this.currentGlyph = 0;
         this.selectedPixel = { x: 0, y: 0 };
         
-        // Font parameters
+        // Font parameters - will be detected/configurable
         this.offset = 0;
         this.width = 8;
         this.height = 16;
-        this.glyphBytes = 16; // 1 byte * 16 rows for 8x16
         
         this.initEventListeners();
         this.createEmptyFont();
@@ -41,6 +40,10 @@ class FontEditor {
         this.glyphs = Array(256).fill().map(() => Array(this.height).fill().map(() => Array(this.width).fill(0)));
     }
     
+    getGlyphBytes() {
+        return Math.ceil(this.width / 8) * this.height;
+    }
+    
     loadFont(file) {
         if (!file) return;
         
@@ -57,28 +60,32 @@ class FontEditor {
     
     parseFontData() {
         this.glyphs = [];
-        const totalGlyphs = Math.floor((this.fontData.length - this.offset) / this.glyphBytes);
+        const glyphBytes = this.getGlyphBytes();
+        const totalGlyphs = Math.floor((this.fontData.length - this.offset) / glyphBytes);
+        const bytesPerRow = Math.ceil(this.width / 8);
         
-        for (let g = 0; g < Math.min(256, totalGlyphs); g++) {
+        for (let g = 0; g < totalGlyphs; g++) {
             const glyph = [];
-            const glyphOffset = this.offset + g * this.glyphBytes;
+            const glyphOffset = this.offset + g * glyphBytes;
             
             for (let row = 0; row < this.height; row++) {
                 const pixelRow = [];
-                const byte = this.fontData[glyphOffset + row] || 0;
                 
-                // Convert 1 byte to 8 pixels (big-endian)
-                for (let col = 0; col < 8; col++) {
-                    pixelRow.push((byte & (0x80 >> col)) ? 1 : 0);
+                // Read bytes for this row
+                for (let byteIdx = 0; byteIdx < bytesPerRow; byteIdx++) {
+                    const byte = this.fontData[glyphOffset + row * bytesPerRow + byteIdx] || 0;
+                    const startBit = byteIdx * 8;
+                    const endBit = Math.min(startBit + 8, this.width);
+                    
+                    // Convert byte to pixels (big-endian)
+                    for (let bit = startBit; bit < endBit; bit++) {
+                        const bitPos = bit - startBit;
+                        pixelRow.push((byte & (0x80 >> bitPos)) ? 1 : 0);
+                    }
                 }
                 glyph.push(pixelRow);
             }
             this.glyphs.push(glyph);
-        }
-        
-        // Fill remaining with empty glyphs if needed
-        while (this.glyphs.length < 256) {
-            this.glyphs.push(Array(this.height).fill().map(() => Array(this.width).fill(0)));
         }
     }
     
@@ -94,8 +101,9 @@ class FontEditor {
             
             // Create mini canvas for glyph preview
             const canvas = document.createElement('canvas');
-            canvas.width = 16;
-            canvas.height = 32;
+            const scale = Math.min(16 / this.width, 32 / this.height);
+            canvas.width = this.width * scale;
+            canvas.height = this.height * scale;
             const ctx = canvas.getContext('2d');
             ctx.imageSmoothingEnabled = false;
             
@@ -104,7 +112,7 @@ class FontEditor {
             for (let y = 0; y < this.height; y++) {
                 for (let x = 0; x < this.width; x++) {
                     if (this.glyphs[i] && this.glyphs[i][y] && this.glyphs[i][y][x]) {
-                        ctx.fillRect(x * 2, y * 2, 2, 2);
+                        ctx.fillRect(x * scale, y * scale, scale, scale);
                     }
                 }
             }
@@ -157,12 +165,13 @@ class FontEditor {
         const canvas = glyphElements[this.currentGlyph].querySelector('canvas');
         const ctx = canvas.getContext('2d');
         
+        const scale = Math.min(16 / this.width, 32 / this.height);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = '#000';
         for (let y = 0; y < this.height; y++) {
             for (let x = 0; x < this.width; x++) {
                 if (this.glyphs[this.currentGlyph][y][x]) {
-                    ctx.fillRect(x * 2, y * 2, 2, 2);
+                    ctx.fillRect(x * scale, y * scale, scale, scale);
                 }
             }
         }
@@ -232,13 +241,32 @@ class FontEditor {
     }
     
     saveFontInfo() {
-        // For now, just close the modal
-        // TODO: Implement parameter changes
+        const newWidth = parseInt(document.getElementById('width').value);
+        const newHeight = parseInt(document.getElementById('height').value);
+        const newOffset = parseInt(document.getElementById('offset').value);
+        
+        if (newWidth !== this.width || newHeight !== this.height || newOffset !== this.offset) {
+            this.width = newWidth;
+            this.height = newHeight;
+            this.offset = newOffset;
+            
+            if (this.fontData) {
+                this.parseFontData();
+                this.renderGlyphBrowser();
+                this.renderGlyphEditor();
+            } else {
+                this.createEmptyFont();
+                this.renderGlyphBrowser();
+                this.renderGlyphEditor();
+            }
+            this.updateCount();
+        }
+        
         this.hideFontInfo();
     }
     
     updateCount() {
-        const count = this.fontData ? Math.floor((this.fontData.length - this.offset) / this.glyphBytes) : 0;
+        const count = this.fontData ? Math.floor((this.fontData.length - this.offset) / this.getGlyphBytes()) : 0;
         document.getElementById('count').textContent = count;
     }
 }
