@@ -17,10 +17,12 @@ class FontEditor {
     }
     
     initEventListeners() {
+        document.getElementById('new').onclick = () => this.newFont();
         document.getElementById('open').onclick = () => document.getElementById('fileinput').click();
         document.getElementById('fileinput').onchange = (e) => this.loadFont(e.target.files[0]);
         document.getElementById('save').onclick = () => this.saveFont();
         document.getElementById('export').onclick = () => this.showExportDialog();
+        document.getElementById('about').onclick = () => this.showAbout();
         
         document.getElementById('fontinfo').onclick = () => this.showFontInfo();
         document.getElementById('fontinfo-ok').onclick = () => this.saveFontInfo();
@@ -28,6 +30,8 @@ class FontEditor {
         
         document.getElementById('export-ok').onclick = () => this.exportPNG();
         document.getElementById('export-cancel').onclick = () => this.hideExportDialog();
+        
+        document.getElementById('about-close').onclick = () => this.hideAbout();
         
         document.addEventListener('keydown', (e) => this.handleKeyboard(e));
         
@@ -384,6 +388,24 @@ class FontEditor {
         }, 'image/png');
         
         this.hideExportDialog();
+    }
+    
+    newFont() {
+        this.fontData = null;
+        this.currentGlyph = 0;
+        this.selectedPixel = { x: 0, y: 0 };
+        this.createEmptyFont();
+        this.renderGlyphBrowser();
+        this.renderGlyphEditor();
+        this.updateCount();
+    }
+    
+    showAbout() {
+        document.getElementById('about-modal').style.display = 'block';
+    }
+    
+    hideAbout() {
+        document.getElementById('about-modal').style.display = 'none';
     }
     
     updateCount() {
