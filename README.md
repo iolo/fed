@@ -20,6 +20,7 @@ Bitmap Font Editor
   - confirm if modified since saved
 - Open(File input; no upload)
   - confirm if modified since saved
+  - Open from URL with query parameters: `?url=...&width=8&height=16&offset=0`
 - Save(Download)
     - .fnt/.bin (without header)
 - Export
@@ -81,4 +82,11 @@ Header:Title&Toolbar
 ---------------------------------
 Footer:Links,Copyright
 ```
+
+## Examples
+
+Try these sample fonts:
+
+- [English Font (8x16)](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/master/eng.fnt)
+- [Korean Font (16x16)](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/master/kor.fnt&width=16&height=16)
 

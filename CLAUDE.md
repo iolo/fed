@@ -42,6 +42,7 @@ Since this is a pure HTML/JS/CSS project with no build system:
 1. **File Operations**:
    - New: Create empty font
    - Open: Load .fnt/.bin files via file input or drag-drop
+   - Open from URL: Load fonts from URLs with query parameters (`?url=...&width=8&height=16&offset=0`)
    - Save: Export as binary .fnt file (Uint8Array download)
    - Export: Generate PNG font sheets with customizable layout
 
@@ -65,7 +66,7 @@ Since this is a pure HTML/JS/CSS project with no build system:
 ### Tested Font Formats
 
 - `eng.fnt`: 256 glyphs, 8x16 pixels (16 bytes per glyph)
-- `sans.fnt`: 360 glyphs, 16x16 pixels (32 bytes per glyph, Korean font)
+- `kor.fnt`: 360 glyphs, 16x16 pixels (32 bytes per glyph, Korean font)
 
 ### Design Principles
 
