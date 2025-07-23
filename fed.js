@@ -196,6 +196,10 @@ class FontEditor {
         
         switch(e.key) {
             case 'ArrowUp':
+            case 'k':
+            case 'K':
+            case 'w':
+            case 'W':
                 if (this.editMode) {
                     this.selectedPixel.y = Math.max(0, this.selectedPixel.y - 1);
                     this.renderGlyphEditor();
@@ -205,6 +209,10 @@ class FontEditor {
                 e.preventDefault();
                 break;
             case 'ArrowDown':
+            case 'j':
+            case 'J':
+            case 's':
+            case 'S':
                 if (this.editMode) {
                     this.selectedPixel.y = Math.min(this.height - 1, this.selectedPixel.y + 1);
                     this.renderGlyphEditor();
@@ -214,6 +222,10 @@ class FontEditor {
                 e.preventDefault();
                 break;
             case 'ArrowLeft':
+            case 'h':
+            case 'H':
+            case 'a':
+            case 'A':
                 if (this.editMode) {
                     this.selectedPixel.x = Math.max(0, this.selectedPixel.x - 1);
                     this.renderGlyphEditor();
@@ -223,6 +235,10 @@ class FontEditor {
                 e.preventDefault();
                 break;
             case 'ArrowRight':
+            case 'l':
+            case 'L':
+            case 'd':
+            case 'D':
                 if (this.editMode) {
                     this.selectedPixel.x = Math.min(this.width - 1, this.selectedPixel.x + 1);
                     this.renderGlyphEditor();
