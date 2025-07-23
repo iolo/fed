@@ -21,15 +21,18 @@ Bitmap Font Editor
 - Open(File input; no upload)
   - confirm if modified since saved
 - Save(Download)
+    - .fnt/.bin (without header)
 - Export
-    - .bin(no header)
-    - .png
+    - .png with configurable options:
+      - Glyphs per row (1-32)
+      - Scale factor (1-8x)
+      - Horizontal/vertical gaps
+      - Background/foreground colors
 - Glyph Browser
   - show all glyphs as grid with specfied zoom factor(default:2)
   - Arrow keys to select a glyph
   - ENTER key to edit a glyph(switch to editor mode)
   - DEL key to delete a glyph
-  - Double Click glyph to select
 - Edit Glyph
   - show th current glyph in pixel grid with specified zoom(default: auto-fit)
   - Arrow keys to select pixel(current pixel should be highlighted)
@@ -60,9 +63,9 @@ Bitmap Font Editor
 - Font Info(Modal)
   - offset (default=0; read/write)
   - width (default=8; read/write)
-  - height (default=8; read/write)
+  - height (default=16; read/write)
   - count (read only)
-    - (filesize - offset) / (((width/8) + 1) * height)
+    - (filesize - offset) / (ceil(width/8) * height)
      
 ```
 Header:Title&Toolbar

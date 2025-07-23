@@ -52,8 +52,7 @@ Since this is a pure HTML/JS/CSS project with no build system:
    - Support for fonts with any width (multi-byte rows)
 
 3. **Navigation**:
-   - **Arrow keys**: Navigate between glyphs
-   - **Shift+Arrow keys**: Move pixel cursor within glyph
+   - **Arrow keys / HJKL (vim) / WASD (FPS)**: Navigate between glyphs (browse mode) or move pixel cursor (edit mode)
    - **Space**: Toggle pixel on/off
    - **Mouse**: Click glyphs/pixels for selection
 
