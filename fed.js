@@ -12,7 +12,7 @@ class FontEditor {
         this.height = 16;
         
         this.initEventListeners();
-        this.createEmptyFont();
+        this.loadFromURL() || this.createEmptyFont();
         this.renderGlyphBrowser();
         this.renderGlyphEditor();
         this.updateActivePanel();
@@ -493,6 +493,57 @@ class FontEditor {
     updateCount() {
         const count = this.fontData ? Math.floor((this.fontData.length - this.offset) / this.getGlyphBytes()) : 0;
         document.getElementById('count').textContent = count;
+    }
+    
+    loadFromURL() {
+        const params = new URLSearchParams(window.location.search);
+        const url = params.get('url');
+        
+        if (!url) return false;
+        
+        // Parse optional parameters
+        const width = params.get('width');
+        const height = params.get('height');
+        const offset = params.get('offset');
+        
+        if (width) this.width = parseInt(width);
+        if (height) this.height = parseInt(height);
+        if (offset) this.offset = parseInt(offset);
+        
+        // Try to load from URL
+        this.loadFontFromURL(url);
+        return true;
+    }
+    
+    async loadFontFromURL(url) {
+        try {
+            // Try direct fetch first
+            let response;
+            try {
+                response = await fetch(url);
+            } catch (corsError) {
+                // Fallback to CORS proxy
+                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+                response = await fetch(proxyUrl);
+            }
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const arrayBuffer = await response.arrayBuffer();
+            this.fontData = new Uint8Array(arrayBuffer);
+            this.parseFontData();
+            this.renderGlyphBrowser();
+            this.renderGlyphEditor();
+            this.updateCount();
+            
+        } catch (error) {
+            console.error('Failed to load font from URL:', error);
+            alert(`Failed to load font from URL: ${error.message}\n\nPlease check the URL or try downloading the file and opening it locally.`);
+            // Fallback to empty font
+            this.createEmptyFont();
+        }
     }
 }
 
