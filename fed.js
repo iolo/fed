@@ -191,6 +191,14 @@ class FontEditor {
         }
     }
     
+    getGridColumns() {
+        const grid = document.querySelector('.glyph-grid');
+        if (!grid) return 16; // fallback
+        const gridStyle = getComputedStyle(grid);
+        const columns = gridStyle.gridTemplateColumns.split(' ').length;
+        return columns > 0 ? columns : 16; // fallback to 16 if calculation fails
+    }
+
     handleKeyboard(e) {
         if (document.querySelector('.modal').style.display === 'block') return;
         
@@ -204,7 +212,8 @@ class FontEditor {
                     this.selectedPixel.y = Math.max(0, this.selectedPixel.y - 1);
                     this.renderGlyphEditor();
                 } else {
-                    this.selectGlyph(Math.max(0, this.currentGlyph - 16));
+                    const cols = this.getGridColumns();
+                    this.selectGlyph(Math.max(0, this.currentGlyph - cols));
                 }
                 e.preventDefault();
                 break;
@@ -217,7 +226,8 @@ class FontEditor {
                     this.selectedPixel.y = Math.min(this.height - 1, this.selectedPixel.y + 1);
                     this.renderGlyphEditor();
                 } else {
-                    this.selectGlyph(Math.min(this.glyphs.length - 1, this.currentGlyph + 16));
+                    const cols = this.getGridColumns();
+                    this.selectGlyph(Math.min(this.glyphs.length - 1, this.currentGlyph + cols));
                 }
                 e.preventDefault();
                 break;
