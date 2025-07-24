@@ -226,3 +226,15 @@ footer a {
         min-height: 300px;
     }
 }
+
+/* Small screen toolbar optimization */
+@media (max-width: 600px) {
+    .toolbar button small {
+        display: none;
+    }
+    
+    .toolbar button {
+        padding: 8px;
+        min-width: 40px;
+    }
+}
