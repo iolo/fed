@@ -30,10 +30,11 @@ Since this is a pure HTML/JS/CSS project with no build system:
    - Keyboard and mouse event handling
 
 2. **Layout** (`index.html`/`fed.css`):
-   - **Header**: Title + toolbar (📄 New, 📂 Open, 💾 Save, 📤 Export, ℹ️ Font Info, ❓ About)
+   - **Header**: Title + responsive toolbar (📄 New, 📂 Open, 💾 Save, 📤 Export, ℹ️ Font Info, ❓ About)
+     - Adaptive: Shows emoji + text on large screens, emoji-only on small screens
    - **Main**: Split view with draggable splitter
-     - Left: GlyphBrowser (grid of all glyphs)
-     - Right: GlyphEditor (pixel-level editing)
+     - Desktop: Left/Right split (GlyphBrowser | GlyphEditor) 
+     - Mobile Portrait: Top/Bottom split (GlyphBrowser / GlyphEditor)
    - **Footer**: Copyright and links
    - **Modals**: Font Info and Export PNG dialogs
 
@@ -54,6 +55,7 @@ Since this is a pure HTML/JS/CSS project with no build system:
 
 3. **Navigation**:
    - **Arrow keys / HJKL (vim) / WASD (FPS)**: Navigate between glyphs (browse mode) or move pixel cursor (edit mode)
+   - **Up/Down keys**: Smart row navigation - moves by actual grid columns (responsive)
    - **Space**: Toggle pixel on/off
    - **Mouse**: Click glyphs/pixels for selection
 
@@ -75,3 +77,5 @@ Since this is a pure HTML/JS/CSS project with no build system:
 - No external dependencies
 - Cross-browser compatibility
 - Responsive canvas-based rendering
+- Mobile-friendly with portrait orientation support
+- Adaptive toolbar for small displays
