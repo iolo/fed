@@ -6,10 +6,11 @@
 
 body {
     font-family: monospace;
-    height: 100vh;
+    height: 100dvh;
     display: flex;
     flex-direction: column;
     background: #f0f0f0;
+    overscroll-behavior: none;
 }
 
 header {
@@ -60,6 +61,7 @@ main {
     border-right: 1px solid #999;
     overflow: auto;
     padding: 10px;
+    touch-action: none;
 }
 
 #glyphbrowser.active {
@@ -84,6 +86,7 @@ main {
     display: flex;
     align-items: center;
     justify-content: center;
+    touch-action: none;
 }
 
 #glypheditor.active {
