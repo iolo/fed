@@ -11,6 +11,13 @@ class FontEditor {
         this.width = 8;
         this.height = 16;
         
+        // UI sizing constants
+        this.BASE_PIXEL_SIZE = 20;
+        this.BASE_GLYPH_SIZE = 20;
+        this.BORDER_SIZE = 1;
+        this.GAP_SIZE = 2;
+        this.PADDING_SIZE = 40;
+        
         // Zoom parameters
         this.browserZoom = 1.0;
         this.editorZoom = 1.0;
@@ -130,7 +137,7 @@ class FontEditor {
             ctx.imageSmoothingEnabled = false;
             
             // Update glyph div size based on zoom
-            const glyphSize = Math.max(20, Math.min(this.width * scale, this.height * scale));
+            const glyphSize = Math.max(this.BASE_GLYPH_SIZE, Math.min(this.width * scale, this.height * scale));
             glyphDiv.style.width = glyphSize + 'px';
             glyphDiv.style.height = Math.max(glyphSize, this.height * scale) + 'px';
             
@@ -151,7 +158,7 @@ class FontEditor {
         }
         
         // Update grid template to accommodate zoom
-        const glyphSize = Math.max(20 * this.browserZoom, 20);
+        const glyphSize = Math.max(this.BASE_GLYPH_SIZE * this.browserZoom, this.BASE_GLYPH_SIZE);
         grid.style.gridTemplateColumns = `repeat(auto-fill, ${glyphSize}px)`;
     }
     
@@ -161,7 +168,7 @@ class FontEditor {
         
         const pixelGrid = document.createElement('div');
         pixelGrid.className = 'pixel-grid';
-        const pixelSize = Math.round(20 * this.editorZoom);
+        const pixelSize = Math.round(this.BASE_PIXEL_SIZE * this.editorZoom);
         pixelGrid.style.gridTemplateColumns = `repeat(${this.width}, ${pixelSize}px)`;
         
         for (let y = 0; y < this.height; y++) {
@@ -225,14 +232,15 @@ class FontEditor {
     autoFitBrowser() {
         const browser = document.getElementById('glyphbrowser');
         const rect = browser.getBoundingClientRect();
-        const availableWidth = rect.width - 40; // padding
-        const availableHeight = rect.height - 40;
+        const availableWidth = rect.width - this.PADDING_SIZE;
+        const availableHeight = rect.height - this.PADDING_SIZE;
         
         // Calculate ideal glyph size based on available space
-        const cols = Math.floor(availableWidth / 22); // min glyph size + gap
+        const minGlyphWithGap = this.BASE_GLYPH_SIZE + this.GAP_SIZE;
+        const cols = Math.floor(availableWidth / minGlyphWithGap);
         const rows = Math.ceil(256 / cols);
-        const maxGlyphWidth = Math.floor(availableWidth / cols) - 2; // gap
-        const maxGlyphHeight = Math.floor(availableHeight / rows) - 2;
+        const maxGlyphWidth = Math.floor(availableWidth / cols) - this.GAP_SIZE;
+        const maxGlyphHeight = Math.floor(availableHeight / rows) - this.GAP_SIZE;
         
         const baseScale = Math.min(16 / this.width, 32 / this.height);
         const maxZoomWidth = maxGlyphWidth / (this.width * baseScale);
@@ -245,12 +253,13 @@ class FontEditor {
     autoFitEditor() {
         const editor = document.getElementById('glypheditor');
         const rect = editor.getBoundingClientRect();
-        const availableWidth = rect.width - 40; // padding
-        const availableHeight = rect.height - 40;
+        const availableWidth = rect.width - this.PADDING_SIZE;
+        const availableHeight = rect.height - this.PADDING_SIZE;
         
         // Calculate max zoom that fits the glyph in the available space
-        const maxZoomWidth = availableWidth / (this.width * 21); // 20px + 1px border
-        const maxZoomHeight = availableHeight / (this.height * 21);
+        const pixelWithBorder = this.BASE_PIXEL_SIZE + this.BORDER_SIZE;
+        const maxZoomWidth = availableWidth / (this.width * pixelWithBorder);
+        const maxZoomHeight = availableHeight / (this.height * pixelWithBorder);
         
         this.editorZoom = Math.max(this.minZoom, Math.min(this.maxZoom, Math.min(maxZoomWidth, maxZoomHeight)));
         this.renderGlyphEditor();
