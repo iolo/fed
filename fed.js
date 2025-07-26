@@ -11,6 +11,13 @@ class FontEditor {
         this.width = 8;
         this.height = 16;
         
+        // Zoom parameters
+        this.browserZoom = 1.0;
+        this.editorZoom = 1.0;
+        this.minZoom = 0.5;
+        this.maxZoom = 4.0;
+        this.zoomStep = 0.25;
+        
         this.initEventListeners();
         this.loadFromURL() || this.createEmptyFont();
         this.renderGlyphBrowser();
@@ -113,13 +120,19 @@ class FontEditor {
             glyphDiv.className = 'glyph';
             if (i === this.currentGlyph) glyphDiv.classList.add('selected');
             
-            // Create mini canvas for glyph preview
+            // Create mini canvas for glyph preview with zoom
             const canvas = document.createElement('canvas');
-            const scale = Math.min(16 / this.width, 32 / this.height);
+            const baseScale = Math.min(16 / this.width, 32 / this.height);
+            const scale = baseScale * this.browserZoom;
             canvas.width = this.width * scale;
             canvas.height = this.height * scale;
             const ctx = canvas.getContext('2d');
             ctx.imageSmoothingEnabled = false;
+            
+            // Update glyph div size based on zoom
+            const glyphSize = Math.max(20, Math.min(this.width * scale, this.height * scale));
+            glyphDiv.style.width = glyphSize + 'px';
+            glyphDiv.style.height = Math.max(glyphSize, this.height * scale) + 'px';
             
             // Draw glyph
             ctx.fillStyle = '#000';
@@ -136,6 +149,10 @@ class FontEditor {
             glyphDiv.ondblclick = () => this.selectGlyph(i);
             grid.appendChild(glyphDiv);
         }
+        
+        // Update grid template to accommodate zoom
+        const glyphSize = Math.max(20 * this.browserZoom, 20);
+        grid.style.gridTemplateColumns = `repeat(auto-fill, ${glyphSize}px)`;
     }
     
     renderGlyphEditor() {
@@ -144,12 +161,15 @@ class FontEditor {
         
         const pixelGrid = document.createElement('div');
         pixelGrid.className = 'pixel-grid';
-        pixelGrid.style.gridTemplateColumns = `repeat(${this.width}, 20px)`;
+        const pixelSize = Math.round(20 * this.editorZoom);
+        pixelGrid.style.gridTemplateColumns = `repeat(${this.width}, ${pixelSize}px)`;
         
         for (let y = 0; y < this.height; y++) {
             for (let x = 0; x < this.width; x++) {
                 const pixel = document.createElement('div');
                 pixel.className = 'pixel';
+                pixel.style.width = pixelSize + 'px';
+                pixel.style.height = pixelSize + 'px';
                 if (this.glyphs[this.currentGlyph][y][x]) pixel.classList.add('on');
                 if (x === this.selectedPixel.x && y === this.selectedPixel.y) pixel.classList.add('selected');
                 
@@ -179,7 +199,8 @@ class FontEditor {
         const canvas = glyphElements[this.currentGlyph].querySelector('canvas');
         const ctx = canvas.getContext('2d');
         
-        const scale = Math.min(16 / this.width, 32 / this.height);
+        const baseScale = Math.min(16 / this.width, 32 / this.height);
+        const scale = baseScale * this.browserZoom;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = '#000';
         for (let y = 0; y < this.height; y++) {
@@ -189,6 +210,50 @@ class FontEditor {
                 }
             }
         }
+    }
+    
+    zoomBrowser(delta) {
+        this.browserZoom = Math.max(this.minZoom, Math.min(this.maxZoom, this.browserZoom + delta));
+        this.renderGlyphBrowser();
+    }
+    
+    zoomEditor(delta) {
+        this.editorZoom = Math.max(this.minZoom, Math.min(this.maxZoom, this.editorZoom + delta));
+        this.renderGlyphEditor();
+    }
+    
+    autoFitBrowser() {
+        const browser = document.getElementById('glyphbrowser');
+        const rect = browser.getBoundingClientRect();
+        const availableWidth = rect.width - 40; // padding
+        const availableHeight = rect.height - 40;
+        
+        // Calculate ideal glyph size based on available space
+        const cols = Math.floor(availableWidth / 22); // min glyph size + gap
+        const rows = Math.ceil(256 / cols);
+        const maxGlyphWidth = Math.floor(availableWidth / cols) - 2; // gap
+        const maxGlyphHeight = Math.floor(availableHeight / rows) - 2;
+        
+        const baseScale = Math.min(16 / this.width, 32 / this.height);
+        const maxZoomWidth = maxGlyphWidth / (this.width * baseScale);
+        const maxZoomHeight = maxGlyphHeight / (this.height * baseScale);
+        
+        this.browserZoom = Math.max(this.minZoom, Math.min(this.maxZoom, Math.min(maxZoomWidth, maxZoomHeight)));
+        this.renderGlyphBrowser();
+    }
+    
+    autoFitEditor() {
+        const editor = document.getElementById('glypheditor');
+        const rect = editor.getBoundingClientRect();
+        const availableWidth = rect.width - 40; // padding
+        const availableHeight = rect.height - 40;
+        
+        // Calculate max zoom that fits the glyph in the available space
+        const maxZoomWidth = availableWidth / (this.width * 21); // 20px + 1px border
+        const maxZoomHeight = availableHeight / (this.height * 21);
+        
+        this.editorZoom = Math.max(this.minZoom, Math.min(this.maxZoom, Math.min(maxZoomWidth, maxZoomHeight)));
+        this.renderGlyphEditor();
     }
     
     getGridColumns() {
@@ -285,6 +350,73 @@ class FontEditor {
                     }
                     this.renderGlyphEditor();
                     this.updateGlyphInBrowser();
+                }
+                e.preventDefault();
+                break;
+            case '=':
+            case '+':
+                if (e.ctrlKey || e.metaKey) {
+                    // Zoom both browser and editor
+                    this.zoomBrowser(this.zoomStep);
+                    this.zoomEditor(this.zoomStep);
+                } else {
+                    // Zoom current active panel based on mode
+                    if (this.editMode) {
+                        this.zoomEditor(this.zoomStep);
+                    } else {
+                        this.zoomBrowser(this.zoomStep);
+                    }
+                }
+                e.preventDefault();
+                break;
+            case '-':
+            case '_':
+                if (e.ctrlKey || e.metaKey) {
+                    // Zoom both browser and editor
+                    this.zoomBrowser(-this.zoomStep);
+                    this.zoomEditor(-this.zoomStep);
+                } else {
+                    // Zoom current active panel based on mode
+                    if (this.editMode) {
+                        this.zoomEditor(-this.zoomStep);
+                    } else {
+                        this.zoomBrowser(-this.zoomStep);
+                    }
+                }
+                e.preventDefault();
+                break;
+            case '0':
+                if (e.ctrlKey || e.metaKey) {
+                    // Reset both panels zoom to 1.0
+                    this.browserZoom = 1.0;
+                    this.editorZoom = 1.0;
+                    this.renderGlyphBrowser();
+                    this.renderGlyphEditor();
+                } else {
+                    // Reset current active panel zoom based on mode
+                    if (this.editMode) {
+                        this.editorZoom = 1.0;
+                        this.renderGlyphEditor();
+                    } else {
+                        this.browserZoom = 1.0;
+                        this.renderGlyphBrowser();
+                    }
+                }
+                e.preventDefault();
+                break;
+            case 'f':
+            case 'F':
+                if (e.ctrlKey || e.metaKey) {
+                    // Auto-fit both panels
+                    this.autoFitBrowser();
+                    this.autoFitEditor();
+                } else {
+                    // Auto-fit current active panel based on mode
+                    if (this.editMode) {
+                        this.autoFitEditor();
+                    } else {
+                        this.autoFitBrowser();
+                    }
                 }
                 e.preventDefault();
                 break;
