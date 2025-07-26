@@ -59,7 +59,16 @@ Since this is a pure HTML/JS/CSS project with no build system:
    - **Space**: Toggle pixel on/off
    - **Mouse**: Click glyphs/pixels for selection
 
-4. **Font Format Support**:
+4. **Zoom Controls**:
+   - **+/-**: Zoom in/out current panel (browser in browse mode, editor in edit mode)
+   - **Ctrl++/Ctrl+-**: Zoom both panels simultaneously
+   - **0**: Reset current panel zoom to 100%
+   - **Ctrl+0**: Reset both panels zoom to 100%
+   - **F**: Auto-fit current panel (maintains aspect ratio)
+   - **Ctrl+F**: Auto-fit both panels
+   - **Range**: 0.5x to 4.0x zoom with 0.25x increments
+
+5. **Font Format Support**:
    - Flexible glyph dimensions (8x16, 16x16, etc.)
    - Big-endian bit packing
    - Configurable file offset
