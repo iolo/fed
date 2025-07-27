@@ -34,13 +34,15 @@
     <div id="fontinfo-modal" class="modal">
         <div class="modal-content">
             <h3>Font Info</h3>
-            <label>Offset: <input type="number" id="offset" value="0" min="0"></label>
-            <label>Width: <input type="number" id="width" value="8" min="1" max="32"></label>
-            <label>Height: <input type="number" id="height" value="8" min="1" max="32"></label>
-            <label>Count: <span id="count">0</span></label>
-            <div class="modal-buttons">
-                <button id="fontinfo-ok">OK</button>
-                <button id="fontinfo-cancel">Cancel</button>
+            <div class="modal-body">
+                <label>Offset: <input type="number" id="offset" value="0" min="0"></label>
+                <label>Width: <input type="number" id="width" value="8" min="1" max="32"></label>
+                <label>Height: <input type="number" id="height" value="8" min="1" max="32"></label>
+                <label>Count: <span id="count">0</span></label>
+                <div class="modal-buttons">
+                    <button id="fontinfo-ok">OK</button>
+                    <button id="fontinfo-cancel">Cancel</button>
+                </div>
             </div>
         </div>
     </div>
@@ -48,15 +50,17 @@
     <div id="export-modal" class="modal">
         <div class="modal-content">
             <h3>Export PNG</h3>
-            <label>Glyphs per row: <input type="number" id="glyphs-per-row" value="16" min="1" max="32"></label>
-            <label>Scale: <input type="number" id="export-scale" value="2" min="1" max="8"></label>
-            <label>H Gap: <input type="number" id="h-gap" value="1" min="0"></label>
-            <label>V Gap: <input type="number" id="v-gap" value="1" min="0"></label>
-            <label>BG Color: <input type="color" id="bg-color" value="#ffffff"></label>
-            <label>FG Color: <input type="color" id="fg-color" value="#000000"></label>
-            <div class="modal-buttons">
-                <button id="export-ok">📤 Export</button>
-                <button id="export-cancel">Cancel</button>
+            <div class="modal-body">
+                <label>Glyphs per row: <input type="number" id="glyphs-per-row" value="16" min="1" max="32"></label>
+                <label>Scale: <input type="number" id="export-scale" value="2" min="1" max="8"></label>
+                <label>H Gap: <input type="number" id="h-gap" value="1" min="0"></label>
+                <label>V Gap: <input type="number" id="v-gap" value="1" min="0"></label>
+                <label>BG Color: <input type="color" id="bg-color" value="#ffffff"></label>
+                <label>FG Color: <input type="color" id="fg-color" value="#000000"></label>
+                <div class="modal-buttons">
+                    <button id="export-ok">📤 Export</button>
+                    <button id="export-cancel">Cancel</button>
+                </div>
             </div>
         </div>
     </div>
@@ -64,33 +68,35 @@
     <div id="about-modal" class="modal">
         <div class="modal-content">
             <h3>About fed</h3>
-            <p><strong>fed</strong> - Bitmap Font Editor</p>
-            <p>A simple, minimalistic font editor for retro computing.</p>
-            <br>
-            <p><strong>Features:</strong></p>
-            <ul>
-                <li>📂 Load bitmap fonts (.fnt, .bin)</li>
-                <li>✏️ Pixel-perfect editing</li>
-                <li>⌨️ Keyboard navigation</li>
-                <li>💾 Save binary fonts</li>
-                <li>📤 Export PNG font sheets</li>
-                <li>🔧 Configurable font dimensions</li>
-            </ul>
-            <br>
-            <p><strong>Keyboard shortcuts:</strong></p>
-            <ul>
-                <li>Arrow keys: Navigate glyphs/pixels</li>
-                <li>Enter/Esc: Start/Finish glyph editing</li>
-                <li>Space: Toggle pixel</li>
-                <li>+/-: Zoom in/out (browser/editor based on mode)</li>
-                <li>Ctrl++/Ctrl+-: Zoom both panels</li>
-                <li>0: Reset zoom to 100% (current panel)</li>
-                <li>Ctrl+0: Reset both panels zoom</li>
-                <li>F: Auto-fit (current panel)</li>
-                <li>Ctrl+F: Auto-fit both panels</li>
-            </ul>
-            <div class="modal-buttons">
-                <button id="about-close">Close</button>
+            <div class="modal-body">
+                <p><strong>fed</strong> - Bitmap Font Editor</p>
+                <p>A simple, minimalistic font editor for retro computing.</p>
+                <br>
+                <p><strong>Features:</strong></p>
+                <ul>
+                    <li>📂 Load bitmap fonts (.fnt, .bin)</li>
+                    <li>✏️ Pixel-perfect editing</li>
+                    <li>⌨️ Keyboard navigation</li>
+                    <li>💾 Save binary fonts</li>
+                    <li>📤 Export PNG font sheets</li>
+                    <li>🔧 Configurable font dimensions</li>
+                </ul>
+                <br>
+                <p><strong>Keyboard shortcuts:</strong></p>
+                <ul>
+                    <li>Arrow keys: Navigate glyphs/pixels</li>
+                    <li>Enter/Esc: Start/Finish glyph editing</li>
+                    <li>Space: Toggle pixel</li>
+                    <li>+/-: Zoom in/out (browser/editor based on mode)</li>
+                    <li>Ctrl++/Ctrl+-: Zoom both panels</li>
+                    <li>0: Reset zoom to 100% (current panel)</li>
+                    <li>Ctrl+0: Reset both panels zoom</li>
+                    <li>F: Auto-fit (current panel)</li>
+                    <li>Ctrl+F: Auto-fit both panels</li>
+                </ul>
+                <div class="modal-buttons">
+                    <button id="about-close">Close</button>
+                </div>
             </div>
         </div>
     </div>

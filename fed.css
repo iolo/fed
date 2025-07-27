@@ -1,11 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+i {
+    font-style: normal;
+}
+
 body {
-    font-family: monospace;
+    font-family: 'Press Start 2P', monospace;
     height: 100dvh;
     display: flex;
     flex-direction: column;
@@ -24,7 +30,7 @@ header {
 }
 
 header h1 {
-    font-size: 24px;
+    font-size: 16px;
     font-weight: normal;
 }
 
@@ -35,18 +41,33 @@ header h1 {
 
 button {
     padding: 8px 12px;
-    border: 1px solid #999;
-    background: #eee;
+    border: none;
+    background: #c0c0c0;
     cursor: pointer;
-    font-family: monospace;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    border-top: 2px solid #ffffff;
+    border-left: 2px solid #ffffff;
+    border-right: 2px solid #808080;
+    border-bottom: 2px solid #808080;
+    box-shadow: inset 1px 1px 0px #dfdfdf, inset -1px -1px 0px #404040;
 }
 
 button:hover {
-    background: #ddd;
+    background: #d4d0c8;
+    border-top: 2px solid #ffffff;
+    border-left: 2px solid #ffffff;
+    border-right: 2px solid #808080;
+    border-bottom: 2px solid #808080;
 }
 
 button:active {
-    background: #ccc;
+    background: #a0a0a0;
+    border-top: 2px solid #808080;
+    border-left: 2px solid #808080;
+    border-right: 2px solid #ffffff;
+    border-bottom: 2px solid #ffffff;
+    box-shadow: inset 1px 1px 0px #404040, inset -1px -1px 0px #dfdfdf;
 }
 
 main {
@@ -100,7 +121,7 @@ footer {
     display: flex;
     align-items: center;
     padding: 0 20px;
-    font-size: 12px;
+    font-size: 8px;
     gap: 10px;
 }
 
@@ -170,14 +191,26 @@ footer a {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: #fff;
-    border: 1px solid #999;
-    padding: 20px;
+    background: #c0c0c0;
+    border: 2px outset #c0c0c0;
+    padding: 0;
     min-width: 250px;
+    font-size: 8px;
+    line-height: 1.4;
 }
 
 .modal-content h3 {
-    margin-bottom: 15px;
+    background: linear-gradient(90deg, #0a246a 0%, #a6caf0 50%, #0a246a 100%);
+    color: white;
+    padding: 4px 8px;
+    margin: 0;
+    font-size: 8px;
+    text-shadow: 1px 1px 0px #000040;
+}
+
+.modal-body {
+    padding: 20px;
+    background: #c0c0c0;
 }
 
 .modal-content label {
@@ -237,7 +270,7 @@ footer a {
     }
     
     .toolbar button {
-        padding: 8px;
-        min-width: 40px;
+        padding: 6px;
+        min-width: 28px;
     }
 }
