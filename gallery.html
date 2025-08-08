@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Font Gallery - fed</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Press Start 2P', monospace;
+            background: #c0c0c0;
+            color: #000;
+            line-height: 1.4;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #000080;
+            font-size: 2em;
+        }
+
+        .font-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .font-section {
+            background: #f0f0f0;
+            border: 2px inset #c0c0c0;
+            border-radius: 4px;
+            padding: 15px;
+        }
+
+        .font-section h2 {
+            color: #800000;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #808080;
+            padding-bottom: 5px;
+        }
+
+        .font-list {
+            list-style: none;
+        }
+
+        .font-item {
+            margin: 5px 0;
+        }
+
+        .font-link {
+            display: inline-block;
+            color: #000080;
+            text-decoration: none;
+            padding: 3px 6px;
+            border: 1px solid transparent;
+            border-radius: 2px;
+            transition: all 0.2s;
+        }
+
+        .font-link:hover {
+            background: #0000ff;
+            color: #ffffff;
+            border-color: #000080;
+        }
+
+        .font-info {
+            font-size: 0.8em;
+            color: #606060;
+            margin-left: 10px;
+        }
+
+        .loading {
+            text-align: center;
+            font-size: 1.2em;
+            color: #606060;
+            margin: 50px 0;
+        }
+
+        .error {
+            text-align: center;
+            color: #800000;
+            background: #ffcccc;
+            border: 1px solid #cc0000;
+            padding: 10px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Font Gallery</h1>
+        <div id="loading" class="loading">Loading fonts...</div>
+        <div id="error" class="error" style="display: none;"></div>
+        <div id="font-container" class="font-grid" style="display: none;"></div>
+    </div>
+
+    <script>
+        function loadFonts() {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', 'fonts.json', true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    const loading = document.getElementById('loading');
+                    const error = document.getElementById('error');
+                    const container = document.getElementById('font-container');
+                    
+                    loading.style.display = 'none';
+                    
+                    if (xhr.status === 200) {
+                        try {
+                            const fonts = JSON.parse(xhr.responseText);
+                            displayFonts(fonts);
+                            container.style.display = 'grid';
+                        } catch (e) {
+                            error.textContent = 'Error parsing font data: ' + e.message;
+                            error.style.display = 'block';
+                        }
+                    } else {
+                        error.textContent = 'Error loading font data (HTTP ' + xhr.status + ')';
+                        error.style.display = 'block';
+                    }
+                }
+            };
+            xhr.send();
+        }
+
+        function extractFontName(url) {
+            const parts = url.split('/');
+            const filename = parts[parts.length - 1];
+            return filename.split('.')[0];
+        }
+
+        function displayFonts(fonts) {
+            const container = document.getElementById('font-container');
+            
+            // Group fonts by type (Korean vs English)
+            const koreanFonts = fonts.filter(font => font.url.includes('font-kor'));
+            const englishFonts = fonts.filter(font => font.url.includes('font-eng'));
+            
+            function createFontSection(title, fontList) {
+                const section = document.createElement('div');
+                section.className = 'font-section';
+                
+                const header = document.createElement('h2');
+                header.textContent = `${title} (${fontList.length} fonts)`;
+                section.appendChild(header);
+                
+                const list = document.createElement('ul');
+                list.className = 'font-list';
+                
+                fontList.forEach(font => {
+                    const fontName = extractFontName(font.url);
+                    const listItem = document.createElement('li');
+                    listItem.className = 'font-item';
+                    
+                    const link = document.createElement('a');
+                    link.className = 'font-link';
+                    link.href = `index.html?url=${encodeURIComponent(font.url)}&width=${font.width}&height=${font.height}&offset=${font.offset}`;
+                    link.textContent = fontName;
+                    
+                    const info = document.createElement('span');
+                    info.className = 'font-info';
+                    info.textContent = `(${font.width}×${font.height})`;
+                    
+                    listItem.appendChild(link);
+                    listItem.appendChild(info);
+                    list.appendChild(listItem);
+                });
+                
+                section.appendChild(list);
+                return section;
+            }
+            
+            // Add Korean fonts section
+            if (koreanFonts.length > 0) {
+                container.appendChild(createFontSection('Korean Fonts', koreanFonts));
+            }
+            
+            // Add English fonts section
+            if (englishFonts.length > 0) {
+                container.appendChild(createFontSection('English Fonts', englishFonts));
+            }
+        }
+
+        // Load fonts when page loads
+        document.addEventListener('DOMContentLoaded', loadFonts);
+    </script>
+</body>
+</html>

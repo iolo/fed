@@ -18,6 +18,8 @@ Since this is a pure HTML/JS/CSS project with no build system:
 - `index.html` - Main HTML structure with Holy Grail layout
 - `fed.css` - Minimalistic styling for layout and components  
 - `fed.js` - Complete application logic (FontEditor class)
+- `gallery.html` - Font gallery interface for browsing available fonts
+- `fonts.json` - Font database with URLs and metadata (width, height, offset)
 
 ## Architecture
 
@@ -78,6 +80,15 @@ Since this is a pure HTML/JS/CSS project with no build system:
 
 - `eng.fnt`: 256 glyphs, 8x16 pixels (16 bytes per glyph)
 - `kor.fnt`: 360 glyphs, 16x16 pixels (32 bytes per glyph, Korean font)
+
+### Font Gallery
+
+The `gallery.html` provides a browsable interface for the font collection:
+- **Font Database**: `fonts.json` contains 109 fonts with metadata
+- **Korean Fonts**: 57 fonts (16×16 pixels) from the SAN 1.0 collection
+- **English Fonts**: 52 fonts (8×16 pixels) from the SAN 1.0 collection
+- **Direct Links**: Click any font name to open it in the fed editor with correct parameters
+- **Retro Styling**: Uses Press Start 2P font to match the main editor aesthetic
 
 ### Design Principles
 
