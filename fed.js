@@ -10,6 +10,7 @@ class FontEditor {
         this.offset = 0;
         this.width = 8;
         this.height = 16;
+        this.reversedBits = false;
         
         // UI sizing constants
         this.BASE_PIXEL_SIZE = 20;
@@ -436,6 +437,7 @@ class FontEditor {
         document.getElementById('offset').value = this.offset;
         document.getElementById('width').value = this.width;
         document.getElementById('height').value = this.height;
+        document.getElementById('reversed-bits').checked = this.reversedBits;
         this.updateCount();
         document.getElementById('fontinfo-modal').style.display = 'block';
     }
@@ -448,25 +450,74 @@ class FontEditor {
         const newWidth = parseInt(document.getElementById('width').value);
         const newHeight = parseInt(document.getElementById('height').value);
         const newOffset = parseInt(document.getElementById('offset').value);
+        const newReversedBits = document.getElementById('reversed-bits').checked;
+        const dimensionsChanged = newWidth !== this.width || newHeight !== this.height || newOffset !== this.offset;
+        const reversedChanged = newReversedBits !== this.reversedBits;
         
-        if (newWidth !== this.width || newHeight !== this.height || newOffset !== this.offset) {
+        if (dimensionsChanged || reversedChanged) {
             this.width = newWidth;
             this.height = newHeight;
             this.offset = newOffset;
+            if (reversedChanged) {
+                if (this.fontData) {
+                    this.reverseBitsInFontData();
+                } else {
+                    this.reverseBitsInGlyphs();
+                }
+                this.reversedBits = newReversedBits;
+            }
             
             if (this.fontData) {
                 this.parseFontData();
-                this.renderGlyphBrowser();
-                this.renderGlyphEditor();
-            } else {
+            } else if (dimensionsChanged) {
                 this.createEmptyFont();
-                this.renderGlyphBrowser();
-                this.renderGlyphEditor();
             }
+            this.renderGlyphBrowser();
+            this.renderGlyphEditor();
             this.updateCount();
         }
         
         this.hideFontInfo();
+    }
+
+    reverseBitsInGlyphs() {
+        const bytesPerRow = Math.ceil(this.width / 8);
+        for (let g = 0; g < this.glyphs.length; g++) {
+            for (let row = 0; row < this.height; row++) {
+                for (let byteIdx = 0; byteIdx < bytesPerRow; byteIdx++) {
+                    const startBit = byteIdx * 8;
+                    let byte = 0;
+                    for (let bitPos = 0; bitPos < 8; bitPos++) {
+                        const x = startBit + bitPos;
+                        if (x < this.width && this.glyphs[g][row][x]) {
+                            byte |= (0x80 >> bitPos);
+                        }
+                    }
+                    const reversed = this.reverseByte(byte);
+                    for (let bitPos = 0; bitPos < 8; bitPos++) {
+                        const x = startBit + bitPos;
+                        if (x < this.width) {
+                            this.glyphs[g][row][x] = (reversed & (0x80 >> bitPos)) ? 1 : 0;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    reverseBitsInFontData() {
+        for (let i = 0; i < this.fontData.length; i++) {
+            this.fontData[i] = this.reverseByte(this.fontData[i]);
+        }
+    }
+
+    reverseByte(byte) {
+        let result = 0;
+        for (let i = 0; i < 8; i++) {
+            result = (result << 1) | (byte & 1);
+            byte >>= 1;
+        }
+        return result & 0xff;
     }
     
     saveFont() {
