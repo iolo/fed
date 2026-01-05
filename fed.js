@@ -69,6 +69,10 @@ class FontEditor {
         this.glyphs = Array(256).fill().map(() => Array(this.height).fill().map(() => Array(this.width).fill(0)));
     }
 
+    createEmptyGlyph() {
+        return Array(this.height).fill().map(() => Array(this.width).fill(0));
+    }
+
     getGlyphBytes() {
         return Math.ceil(this.width / 8) * this.height;
     }
@@ -356,14 +360,31 @@ class FontEditor {
                 break;
             case 'Delete':
                 if (!this.editMode) {
-                    // Clear current glyph
-                    for (let y = 0; y < this.height; y++) {
-                        for (let x = 0; x < this.width; x++) {
-                            this.glyphs[this.currentGlyph][y][x] = 0;
+                    if (this.glyphs.length > 1) {
+                        this.glyphs.splice(this.currentGlyph, 1);
+                        if (this.currentGlyph >= this.glyphs.length) {
+                            this.currentGlyph = this.glyphs.length - 1;
+                        }
+                    } else {
+                        // Keep at least one glyph by clearing it.
+                        for (let y = 0; y < this.height; y++) {
+                            for (let x = 0; x < this.width; x++) {
+                                this.glyphs[this.currentGlyph][y][x] = 0;
+                            }
                         }
                     }
                     this.renderGlyphEditor();
-                    this.updateGlyphInBrowser();
+                    this.renderGlyphBrowser();
+                    this.updateCount();
+                }
+                e.preventDefault();
+                break;
+            case 'Insert':
+                if (!this.editMode) {
+                    this.glyphs.splice(this.currentGlyph, 0, this.createEmptyGlyph());
+                    this.renderGlyphBrowser();
+                    this.renderGlyphEditor();
+                    this.updateCount();
                 }
                 e.preventDefault();
                 break;
@@ -699,7 +720,7 @@ class FontEditor {
     }
 
     updateCount() {
-        const count = this.fontData ? Math.floor((this.fontData.length - this.offset) / this.getGlyphBytes()) : 0;
+        const count = this.glyphs ? this.glyphs.length : 0;
         document.getElementById('count').textContent = count;
     }
 
