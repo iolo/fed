@@ -359,6 +359,8 @@ class FontEditor {
                 e.preventDefault();
                 break;
             case 'Delete':
+            case 'x':
+            case 'X':
                 if (!this.editMode) {
                     if (this.glyphs.length > 1) {
                         this.glyphs.splice(this.currentGlyph, 1);
@@ -380,6 +382,8 @@ class FontEditor {
                 e.preventDefault();
                 break;
             case 'Insert':
+            case 'i':
+            case 'I':
                 if (!this.editMode) {
                     this.glyphs.splice(this.currentGlyph, 0, this.createEmptyGlyph());
                     this.renderGlyphBrowser();
