@@ -79,6 +79,7 @@ class FontEditor {
         const reader = new FileReader();
         reader.onload = (e) => {
             this.fontData = new Uint8Array(e.target.result);
+            this.reversedBits = false;
             this.parseFontData();
             this.showFontInfo();
             //this.renderGlyphBrowser();
@@ -643,6 +644,7 @@ class FontEditor {
         this.fontData = null;
         this.currentGlyph = 0;
         this.selectedPixel = { x: 0, y: 0 };
+        this.reversedBits = false;
         this.createEmptyFont();
         this.showFontInfo();
         //this.renderGlyphBrowser();
