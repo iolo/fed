@@ -124,7 +124,7 @@ class FontEditor {
         browser.innerHTML = '<div class="glyph-grid"></div>';
         const grid = browser.querySelector('.glyph-grid');
 
-        for (let i = 0; i < 256; i++) {
+        for (let i = 0; i < this.glyphs.length; i++) {
             const glyphDiv = document.createElement('div');
             glyphDiv.className = 'glyph';
             if (i === this.currentGlyph) glyphDiv.classList.add('selected');
@@ -240,7 +240,7 @@ class FontEditor {
         // Calculate ideal glyph size based on available space
         const minGlyphWithGap = this.BASE_GLYPH_SIZE + this.GAP_SIZE;
         const cols = Math.floor(availableWidth / minGlyphWithGap);
-        const rows = Math.ceil(256 / cols);
+        const rows = Math.ceil(this.glyphs.length / cols);
         const maxGlyphWidth = Math.floor(availableWidth / cols) - this.GAP_SIZE;
         const maxGlyphHeight = Math.floor(availableHeight / rows) - this.GAP_SIZE;
 
@@ -276,7 +276,9 @@ class FontEditor {
     }
 
     handleKeyboard(e) {
-        if (document.querySelector('.modal').style.display === 'block') return;
+        const modals = document.querySelectorAll('.modal');
+        const isModalOpen = Array.from(modals).some((modal) => modal.style.display === 'block');
+        if (isModalOpen) return;
 
         switch(e.key) {
             case 'ArrowUp':
