@@ -475,11 +475,11 @@ class FontEditor {
             } else if (dimensionsChanged) {
                 this.createEmptyFont();
             }
-            this.renderGlyphBrowser();
-            this.renderGlyphEditor();
-            this.updateCount();
         }
 
+        this.renderGlyphBrowser();
+        this.renderGlyphEditor();
+        this.updateCount();
         this.hideFontInfo();
     }
 
