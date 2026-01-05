@@ -20,7 +20,7 @@ Bitmap Font Editor
   - confirm if modified since saved
 - Open(File input; no upload)
   - confirm if modified since saved
-  - Open from URL with query parameters: `?url=...&width=8&height=16&offset=0`
+- Open from URL with query parameters: `?url=...&width=8&height=16&offset=0&reversed=1`
 - Save(Download)
     - .fnt/.bin (without header)
 - Export
@@ -57,7 +57,7 @@ Bitmap Font Editor
     - GlyphBrowser: accept drag and drop file to Open File
     - Spilter: drag and drop to resize left(GlyphBrowser) and right(GlyphEditor)
     - GlyphEditor
-  - Footer: fixed Height, full viewport width 
+  - Footer: fixed Height, full viewport width
     - Copyright
     - Links
 - Avoid scrollbar except Glyph Browser and Glyph Editor
@@ -67,7 +67,7 @@ Bitmap Font Editor
   - height (default=16; read/write)
   - count (read only)
     - (filesize - offset) / (ceil(width/8) * height)
-     
+
 ```
 Header:Title&Toolbar
 [New|Open|Save|SaveAs|About]
@@ -89,4 +89,5 @@ Try these sample fonts:
 
 - [English Font (8x16)](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/master/eng.fnt)
 - [Korean Font (16x16)](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/master/kor.fnt&width=16&height=16)
-
+- [Apple II Video ROM (7x8)](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/master/a2.fnt&width=8&height=8) - MSB is not used.
+- [Apple IIe Enhanced Video ROM (7x8)](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/master/a2ee.fnt&width=8&height=8&reversed=1) - MSB is not used. Reversed bits

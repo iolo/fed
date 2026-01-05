@@ -707,10 +707,14 @@ class FontEditor {
         const width = params.get('width');
         const height = params.get('height');
         const offset = params.get('offset');
+        const reversed = params.get('reversed');
         
         if (width) this.width = parseInt(width);
         if (height) this.height = parseInt(height);
         if (offset) this.offset = parseInt(offset);
+        if (reversed) {
+            this.reversedBits = reversed === '1' || reversed.toLowerCase() === 'true';
+        }
         
         // Try to load from URL
         this.loadFontFromURL(url);
@@ -735,6 +739,9 @@ class FontEditor {
             
             const arrayBuffer = await response.arrayBuffer();
             this.fontData = new Uint8Array(arrayBuffer);
+            if (this.reversedBits) {
+                this.reverseBitsInFontData();
+            }
             this.parseFontData();
             this.renderGlyphBrowser();
             this.renderGlyphEditor();
