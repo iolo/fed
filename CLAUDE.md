@@ -56,10 +56,12 @@ Since this is a pure HTML/JS/CSS project with no build system:
    - Support for fonts with any width (multi-byte rows)
 
 3. **Navigation**:
-   - **Arrow keys / HJKL (vim) / WASD (FPS)**: Navigate between glyphs (browse mode) or move pixel cursor (edit mode)
-   - **Up/Down keys**: Smart row navigation - moves by actual grid columns (responsive)
-   - **Space**: Toggle pixel on/off
-   - **Mouse**: Click glyphs/pixels for selection
+- **Arrow keys / HJKL (vim) / WASD (FPS)**: Navigate between glyphs (browse mode) or move pixel cursor (edit mode)
+- **Up/Down keys**: Smart row navigation - moves by actual grid columns (responsive)
+- **Space**: Toggle pixel on/off
+- **Insert / I**: Insert blank glyph before current (browse mode)
+- **Delete / X**: Delete current glyph (browse mode, keeps at least one)
+- **Mouse**: Click glyphs/pixels for selection
 
 4. **Zoom Controls**:
    - **+/-**: Zoom in/out current panel (browser in browse mode, editor in edit mode)

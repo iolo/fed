@@ -40,6 +40,7 @@ Bitmap Font Editor
   - show all glyphs as grid with specfied zoom factor(default:2)
   - Arrow keys to select a glyph
   - ENTER key to edit a glyph(switch to editor mode)
+  - INSERT key to insert a blank glyph before current
   - DEL key to delete a glyph
 - Edit Glyph
   - show th current glyph in pixel grid with specified zoom(default: auto-fit)
