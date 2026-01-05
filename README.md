@@ -18,9 +18,16 @@ Bitmap Font Editor
 
 - New
   - confirm if modified since saved
+  - ask/confirm font info
 - Open(File input; no upload)
   - confirm if modified since saved
-- Open from URL with query parameters: `?url=...&width=8&height=16&offset=0&reversed=1`
+  - ask/confirm font info
+- Open from URL with query parameters
+  - `url`: public url to download(GET) font data
+  - `width`: pixel width
+  - `height`: pixel height
+  - `offset`: skip bytes from the beginning of file
+  - `reversed`: reverse bits or not(for Apple II HGR fonts)
 - Save(Download)
     - .fnt/.bin (without header)
 - Export
@@ -67,6 +74,7 @@ Bitmap Font Editor
   - height (default=16; read/write)
   - count (read only)
     - (filesize - offset) / (ceil(width/8) * height)
+  - reversed bits (checkbox; default=off; read/write)
 
 ```
 Header:Title&Toolbar
