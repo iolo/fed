@@ -5,6 +5,9 @@ class FontEditor {
         this.currentGlyph = 0;
         this.selectedPixel = { x: 0, y: 0 };
         this.editMode = false; // false = browse, true = edit
+        this.selectedGlyphs = new Set([0]);
+        this.selectionAnchor = 0;
+        this.clipboardGlyphs = [];
 
         // Font parameters - will be detected/configurable
         this.offset = 0;
@@ -73,6 +76,26 @@ class FontEditor {
         return Array(this.height).fill().map(() => Array(this.width).fill(0));
     }
 
+    cloneGlyph(glyph) {
+        return glyph.map((row) => row.slice());
+    }
+
+    getSelectedGlyphIndices() {
+        if (!this.selectedGlyphs || this.selectedGlyphs.size === 0) {
+            return [this.currentGlyph];
+        }
+        return Array.from(this.selectedGlyphs).sort((a, b) => a - b);
+    }
+
+    setSelectionRange(anchor, target) {
+        const start = Math.min(anchor, target);
+        const end = Math.max(anchor, target);
+        this.selectedGlyphs = new Set();
+        for (let i = start; i <= end; i++) {
+            this.selectedGlyphs.add(i);
+        }
+    }
+
     getGlyphBytes() {
         return Math.ceil(this.width / 8) * this.height;
     }
@@ -132,7 +155,7 @@ class FontEditor {
         for (let i = 0; i < this.glyphs.length; i++) {
             const glyphDiv = document.createElement('div');
             glyphDiv.className = 'glyph';
-            if (i === this.currentGlyph) glyphDiv.classList.add('selected');
+            if (this.selectedGlyphs.has(i)) glyphDiv.classList.add('selected');
 
             // Create mini canvas for glyph preview with zoom
             const canvas = document.createElement('canvas');
@@ -159,8 +182,24 @@ class FontEditor {
             }
 
             glyphDiv.appendChild(canvas);
-            glyphDiv.onclick = () => this.selectGlyph(i);
-            glyphDiv.ondblclick = () => this.selectGlyph(i);
+            glyphDiv.onclick = (e) => {
+                if (!this.editMode && e.shiftKey) {
+                    this.moveGlyphSelection(i, true);
+                } else if (!this.editMode && (e.ctrlKey || e.metaKey)) {
+                    this.toggleGlyphSelection(i);
+                } else {
+                    this.selectGlyph(i);
+                }
+            };
+            glyphDiv.ondblclick = (e) => {
+                if (!this.editMode && e.shiftKey) {
+                    this.moveGlyphSelection(i, true);
+                } else if (!this.editMode && (e.ctrlKey || e.metaKey)) {
+                    this.toggleGlyphSelection(i);
+                } else {
+                    this.selectGlyph(i);
+                }
+            };
             grid.appendChild(glyphDiv);
         }
 
@@ -197,6 +236,8 @@ class FontEditor {
 
     selectGlyph(index) {
         this.currentGlyph = index;
+        this.selectionAnchor = index;
+        this.selectedGlyphs = new Set([index]);
         this.renderGlyphBrowser();
         this.renderGlyphEditor();
     }
@@ -205,12 +246,12 @@ class FontEditor {
         this.selectedPixel = { x, y };
         this.glyphs[this.currentGlyph][y][x] = 1 - this.glyphs[this.currentGlyph][y][x];
         this.renderGlyphEditor();
-        this.updateGlyphInBrowser();
+        this.updateGlyphInBrowser(this.currentGlyph);
     }
 
-    updateGlyphInBrowser() {
+    updateGlyphInBrowser(index) {
         const glyphElements = document.querySelectorAll('.glyph');
-        const canvas = glyphElements[this.currentGlyph].querySelector('canvas');
+        const canvas = glyphElements[index].querySelector('canvas');
         const ctx = canvas.getContext('2d');
 
         const baseScale = Math.min(16 / this.width, 32 / this.height);
@@ -219,11 +260,50 @@ class FontEditor {
         ctx.fillStyle = '#000';
         for (let y = 0; y < this.height; y++) {
             for (let x = 0; x < this.width; x++) {
-                if (this.glyphs[this.currentGlyph][y][x]) {
+                if (this.glyphs[index][y][x]) {
                     ctx.fillRect(x * scale, y * scale, scale, scale);
                 }
             }
         }
+    }
+
+    updateGlyphsInBrowser(indices) {
+        indices.forEach((index) => this.updateGlyphInBrowser(index));
+    }
+
+    moveGlyphSelection(target, extend) {
+        const clamped = Math.max(0, Math.min(this.glyphs.length - 1, target));
+        if (extend) {
+            if (this.selectionAnchor === null || this.selectionAnchor === undefined) {
+                this.selectionAnchor = this.currentGlyph;
+            }
+            this.currentGlyph = clamped;
+            this.setSelectionRange(this.selectionAnchor, clamped);
+            this.renderGlyphBrowser();
+            this.renderGlyphEditor();
+        } else {
+            this.selectGlyph(clamped);
+        }
+    }
+
+    toggleGlyphSelection(index) {
+        if (this.selectedGlyphs.has(index)) {
+            this.selectedGlyphs.delete(index);
+        } else {
+            this.selectedGlyphs.add(index);
+        }
+
+        if (this.selectedGlyphs.size === 0) {
+            this.selectedGlyphs.add(index);
+        }
+
+        this.currentGlyph = index;
+        if (!this.selectedGlyphs.has(this.selectionAnchor)) {
+            this.selectionAnchor = index;
+        }
+
+        this.renderGlyphBrowser();
+        this.renderGlyphEditor();
     }
 
     zoomBrowser(delta) {
@@ -285,6 +365,50 @@ class FontEditor {
         const isModalOpen = Array.from(modals).some((modal) => modal.style.display === 'block');
         if (isModalOpen) return;
 
+        if (!this.editMode && (e.ctrlKey || e.metaKey)) {
+            const key = e.key.toLowerCase();
+            if (key === 'c') {
+                const indices = this.getSelectedGlyphIndices();
+                this.clipboardGlyphs = indices.map((i) => this.cloneGlyph(this.glyphs[i]));
+                this.selectedGlyphs = new Set([this.currentGlyph]);
+                this.selectionAnchor = this.currentGlyph;
+                this.renderGlyphBrowser();
+                e.preventDefault();
+                return;
+            }
+            if (key === 'x') {
+                const indices = this.getSelectedGlyphIndices();
+                this.clipboardGlyphs = indices.map((i) => this.cloneGlyph(this.glyphs[i]));
+                indices.forEach((i) => {
+                    this.glyphs[i] = this.createEmptyGlyph();
+                });
+                this.selectedGlyphs = new Set([this.currentGlyph]);
+                this.selectionAnchor = this.currentGlyph;
+                this.renderGlyphEditor();
+                this.updateGlyphsInBrowser(indices);
+                this.renderGlyphBrowser();
+                e.preventDefault();
+                return;
+            }
+            if (key === 'v' && this.clipboardGlyphs.length > 0) {
+                this.selectedGlyphs = new Set([this.currentGlyph]);
+                this.selectionAnchor = this.currentGlyph;
+
+                const indices = [];
+                for (let i = 0; i < this.clipboardGlyphs.length; i++) {
+                    const index = this.currentGlyph + i;
+                    if (index >= this.glyphs.length) break;
+                    this.glyphs[index] = this.cloneGlyph(this.clipboardGlyphs[i]);
+                    indices.push(index);
+                }
+
+                this.renderGlyphEditor();
+                this.updateGlyphsInBrowser(indices);
+                e.preventDefault();
+                return;
+            }
+        }
+
         switch(e.key) {
             case 'ArrowUp':
             case 'k':
@@ -296,7 +420,7 @@ class FontEditor {
                     this.renderGlyphEditor();
                 } else {
                     const cols = this.getGridColumns();
-                    this.selectGlyph(Math.max(0, this.currentGlyph - cols));
+                    this.moveGlyphSelection(this.currentGlyph - cols, e.shiftKey);
                 }
                 e.preventDefault();
                 break;
@@ -310,7 +434,7 @@ class FontEditor {
                     this.renderGlyphEditor();
                 } else {
                     const cols = this.getGridColumns();
-                    this.selectGlyph(Math.min(this.glyphs.length - 1, this.currentGlyph + cols));
+                    this.moveGlyphSelection(this.currentGlyph + cols, e.shiftKey);
                 }
                 e.preventDefault();
                 break;
@@ -323,7 +447,7 @@ class FontEditor {
                     this.selectedPixel.x = Math.max(0, this.selectedPixel.x - 1);
                     this.renderGlyphEditor();
                 } else {
-                    this.selectGlyph(Math.max(0, this.currentGlyph - 1));
+                    this.moveGlyphSelection(this.currentGlyph - 1, e.shiftKey);
                 }
                 e.preventDefault();
                 break;
@@ -336,7 +460,7 @@ class FontEditor {
                     this.selectedPixel.x = Math.min(this.width - 1, this.selectedPixel.x + 1);
                     this.renderGlyphEditor();
                 } else {
-                    this.selectGlyph(Math.min(this.glyphs.length - 1, this.currentGlyph + 1));
+                    this.moveGlyphSelection(this.currentGlyph + 1, e.shiftKey);
                 }
                 e.preventDefault();
                 break;
@@ -375,6 +499,8 @@ class FontEditor {
                             }
                         }
                     }
+                    this.selectedGlyphs = new Set([this.currentGlyph]);
+                    this.selectionAnchor = this.currentGlyph;
                     this.renderGlyphEditor();
                     this.renderGlyphBrowser();
                     this.updateCount();
@@ -386,6 +512,8 @@ class FontEditor {
             case 'I':
                 if (!this.editMode) {
                     this.glyphs.splice(this.currentGlyph, 0, this.createEmptyGlyph());
+                    this.selectedGlyphs = new Set([this.currentGlyph]);
+                    this.selectionAnchor = this.currentGlyph;
                     this.renderGlyphBrowser();
                     this.renderGlyphEditor();
                     this.updateCount();
@@ -670,6 +798,8 @@ class FontEditor {
         this.currentGlyph = 0;
         this.selectedPixel = { x: 0, y: 0 };
         this.reversedBits = false;
+        this.selectedGlyphs = new Set([0]);
+        this.selectionAnchor = 0;
         this.createEmptyFont();
         this.showFontInfo();
         //this.renderGlyphBrowser();
