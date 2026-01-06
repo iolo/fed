@@ -16,38 +16,36 @@ Bitmap Font Editor
 
 ## Features
 
-- New
-  - confirm if modified since saved
-  - ask/confirm font info
-- Open(File input; no upload)
-  - confirm if modified since saved
-  - ask/confirm font info
-- Open from URL with query parameters
-  - `url`: public url to download(GET) font data
-  - `width`: pixel width
-  - `height`: pixel height
-  - `offset`: skip bytes from the beginning of file
-  - `reversed`: reverse bits or not(for Apple II HGR fonts)
-- Save(Download)
-    - .fnt/.bin (without header)
-- Export
-    - .png with configurable options:
-      - Glyphs per row (1-32)
-      - Scale factor (1-8x)
-      - Horizontal/vertical gaps
-      - Background/foreground colors
-- Glyph Browser
-  - show all glyphs as grid with specfied zoom factor(default:2)
-  - Arrow keys to select a glyph
-  - ENTER key to edit a glyph(switch to editor mode)
-  - INSERT key to insert a blank glyph before current
-  - DEL key to delete a glyph
-- Edit Glyph
-  - show th current glyph in pixel grid with specified zoom(default: auto-fit)
-  - Arrow keys to select pixel(current pixel should be highlighted)
-  - ESC key to stop editing(switch to browser mode)
-  - SPACE key to toggle pixel
-- Show and edit Font Info
+- New/Open/Save bitmap fonts (.fnt/.bin) with configurable font info
+- Open fonts from URL using query params (`url`, `width`, `height`, `offset`, `reversed`)
+- Export PNG font sheets (grid, scale, gaps, colors)
+- Browse glyphs in a zoomable grid and edit pixels in a zoomable editor
+
+## Keyboard Shortcuts
+
+- Mode
+  - Enter: start editing current glyph
+  - Esc: stop editing, return to browser
+- Browse mode (glyph browser)
+  - Arrow keys / HJKL / WASD: move current glyph
+  - Shift + Arrow keys: extend selection range
+  - Shift + Click: range select with mouse
+  - Ctrl/Cmd + Click: toggle selection
+  - Insert / I: insert blank glyph before current
+  - Delete / X: delete current glyph
+  - Ctrl/Cmd + C: copy selected glyphs
+  - Ctrl/Cmd + X: cut selected glyphs
+  - Ctrl/Cmd + V: paste clipboard starting at current glyph
+- Edit mode (glyph editor)
+  - Arrow keys / HJKL / WASD: move pixel cursor
+  - Space: toggle pixel
+- Zoom
+  - + / -: zoom active panel
+  - Ctrl/Cmd + + / -: zoom both panels
+  - 0: reset active panel zoom
+  - Ctrl/Cmd + 0: reset both panels
+  - F: auto-fit active panel
+  - Ctrl/Cmd + F: auto-fit both panels
 
 ## User Interface
 
