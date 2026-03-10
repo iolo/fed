@@ -17,7 +17,7 @@ Bitmap Font Editor
 ## Features
 
 - New/Open/Save bitmap fonts (.fnt/.bin) with configurable font info
-- Open fonts from URL using query params (`url`, `width`, `height`, `offset`, `reversed`)
+- Open fonts from URL using query params (`url`, `width`, `height`, `offset`, `layout`, `reversed`)
 - Export PNG font sheets (grid, scale, gaps, colors)
 - Browse glyphs in a zoomable grid and edit pixels in a zoomable editor
 
@@ -71,8 +71,11 @@ Bitmap Font Editor
   - offset (default=0; read/write)
   - width (default=8; read/write)
   - height (default=16; read/write)
+  - layout (`row` or `column`; read/write)
+    - `row`: row-major byte order
+    - `column`: column-major byte order across row byte groups
   - count (read only)
-    - (filesize - offset) / (ceil(width/8) * height)
+    - `(filesize - offset) / (ceil(width/8) * height)`
   - reversed bits (checkbox; default=off; read/write)
 
 ```
