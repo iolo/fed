@@ -667,7 +667,7 @@ class FontEditor {
 
             if (this.fontData) {
                 this.parseFontData();
-            } else if (dimensionsChanged || layoutChanged) {
+            } else if (dimensionsChanged) {
                 this.createEmptyFont();
             }
         }
