@@ -38,12 +38,7 @@
 1. Implement unsaved changes confirmation dialogs
 2. Add testing examples section to README.md
 3. Consider architectural overview in user documentation
-4. **URL Loading Feature** - Load fonts from URLs
-   - Add URL input field or query parameter support
-   - Try direct fetch first, fallback to CORS proxy (allorigins.win) if needed
-   - Graceful error handling for CORS-blocked requests
-   - Support for GitHub raw URLs, gists, etc.
-5. **Mouse Drag Drawing** - Draw continuous pixels in glyph editor
+4. **Mouse Drag Drawing** - Draw continuous pixels in glyph editor
    - Enable drawing by dragging mouse while button pressed
    - Improve mobile/touch device usability
    - Add mousedown/mousemove/mouseup event handlers to pixel elements

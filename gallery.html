@@ -171,7 +171,8 @@
                     
                     const link = document.createElement('a');
                     link.className = 'font-link';
-                    link.href = `index.html?url=${encodeURIComponent(font.url)}&width=${font.width}&height=${font.height}&offset=${font.offset}`;
+                    const layoutParam = font.layout ? `&layout=${encodeURIComponent(font.layout)}` : '';
+                    link.href = `index.html?url=${encodeURIComponent(font.url)}&width=${font.width}&height=${font.height}&offset=${font.offset}${layoutParam}`;
                     link.textContent = fontName;
                     
                     const info = document.createElement('span');

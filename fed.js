@@ -13,6 +13,7 @@ class FontEditor {
         this.offset = 0;
         this.width = 8;
         this.height = 16;
+        this.layout = 'row';
         this.reversedBits = false;
 
         // UI sizing constants
@@ -47,6 +48,7 @@ class FontEditor {
         document.getElementById('fontinfo').onclick = () => this.showFontInfo();
         document.getElementById('fontinfo-ok').onclick = () => this.saveFontInfo();
         document.getElementById('fontinfo-cancel').onclick = () => this.hideFontInfo();
+        document.getElementById('width').oninput = () => this.updateLayoutControl();
 
         document.getElementById('export-ok').onclick = () => this.exportPNG();
         document.getElementById('export-cancel').onclick = () => this.hideExportDialog();
@@ -97,7 +99,11 @@ class FontEditor {
     }
 
     getGlyphBytes() {
-        return Math.ceil(this.width / 8) * this.height;
+        return this.getBytesPerRow() * this.height;
+    }
+
+    getBytesPerRow() {
+        return Math.ceil(this.width / 8);
     }
 
     loadFont(file) {
@@ -106,6 +112,7 @@ class FontEditor {
         const reader = new FileReader();
         reader.onload = (e) => {
             this.fontData = new Uint8Array(e.target.result);
+            this.layout = 'row';
             this.reversedBits = false;
             this.parseFontData();
             this.showFontInfo();
@@ -120,31 +127,60 @@ class FontEditor {
         this.glyphs = [];
         const glyphBytes = this.getGlyphBytes();
         const totalGlyphs = Math.floor((this.fontData.length - this.offset) / glyphBytes);
-        const bytesPerRow = Math.ceil(this.width / 8);
 
         for (let g = 0; g < totalGlyphs; g++) {
-            const glyph = [];
             const glyphOffset = this.offset + g * glyphBytes;
+            const glyphData = this.fontData.slice(glyphOffset, glyphOffset + glyphBytes);
+            this.glyphs.push(this.unpackGlyph(glyphData));
+        }
+    }
 
-            for (let row = 0; row < this.height; row++) {
-                const pixelRow = [];
+    unpackGlyph(glyphData) {
+        const glyph = this.createEmptyGlyph();
+        const bytesPerRow = this.getBytesPerRow();
+        for (let y = 0; y < this.height; y++) {
+            for (let byteIdx = 0; byteIdx < bytesPerRow; byteIdx++) {
+                const byteOffset = this.layout === 'column'
+                    ? byteIdx * this.height + y
+                    : y * bytesPerRow + byteIdx;
+                const byte = glyphData[byteOffset] || 0;
+                const startBit = byteIdx * 8;
+                const endBit = Math.min(startBit + 8, this.width);
 
-                // Read bytes for this row
-                for (let byteIdx = 0; byteIdx < bytesPerRow; byteIdx++) {
-                    const byte = this.fontData[glyphOffset + row * bytesPerRow + byteIdx] || 0;
-                    const startBit = byteIdx * 8;
-                    const endBit = Math.min(startBit + 8, this.width);
+                for (let x = startBit; x < endBit; x++) {
+                    const bitPos = x - startBit;
+                    glyph[y][x] = (byte & (0x80 >> bitPos)) ? 1 : 0;
+                }
+            }
+        }
 
-                    // Convert byte to pixels (big-endian)
-                    for (let bit = startBit; bit < endBit; bit++) {
-                        const bitPos = bit - startBit;
-                        pixelRow.push((byte & (0x80 >> bitPos)) ? 1 : 0);
+        return glyph;
+    }
+
+    packGlyph(glyph) {
+        const glyphData = new Uint8Array(this.getGlyphBytes());
+        const bytesPerRow = this.getBytesPerRow();
+        for (let y = 0; y < this.height; y++) {
+            for (let byteIdx = 0; byteIdx < bytesPerRow; byteIdx++) {
+                let byte = 0;
+                const startBit = byteIdx * 8;
+                const endBit = Math.min(startBit + 8, this.width);
+
+                for (let x = startBit; x < endBit; x++) {
+                    const bitPos = x - startBit;
+                    if (glyph[y][x]) {
+                        byte |= (0x80 >> bitPos);
                     }
                 }
-                glyph.push(pixelRow);
+
+                const byteOffset = this.layout === 'column'
+                    ? byteIdx * this.height + y
+                    : y * bytesPerRow + byteIdx;
+                glyphData[byteOffset] = byte;
             }
-            this.glyphs.push(glyph);
         }
+
+        return glyphData;
     }
 
     renderGlyphBrowser() {
@@ -594,7 +630,9 @@ class FontEditor {
         document.getElementById('offset').value = this.offset;
         document.getElementById('width').value = this.width;
         document.getElementById('height').value = this.height;
+        document.getElementById('layout').value = this.layout;
         document.getElementById('reversed-bits').checked = this.reversedBits;
+        this.updateLayoutControl();
         this.updateCount();
         document.getElementById('fontinfo-modal').style.display = 'block';
     }
@@ -607,14 +645,17 @@ class FontEditor {
         const newWidth = parseInt(document.getElementById('width').value);
         const newHeight = parseInt(document.getElementById('height').value);
         const newOffset = parseInt(document.getElementById('offset').value);
+        const newLayout = newWidth <= 8 ? 'row' : document.getElementById('layout').value;
         const newReversedBits = document.getElementById('reversed-bits').checked;
         const dimensionsChanged = newWidth !== this.width || newHeight !== this.height || newOffset !== this.offset;
+        const layoutChanged = newLayout !== this.layout;
         const reversedChanged = newReversedBits !== this.reversedBits;
 
-        if (dimensionsChanged || reversedChanged) {
+        if (dimensionsChanged || layoutChanged || reversedChanged) {
             this.width = newWidth;
             this.height = newHeight;
             this.offset = newOffset;
+            this.layout = newLayout;
             if (reversedChanged) {
                 if (this.fontData) {
                     this.reverseBitsInFontData();
@@ -626,7 +667,7 @@ class FontEditor {
 
             if (this.fontData) {
                 this.parseFontData();
-            } else if (dimensionsChanged) {
+            } else if (dimensionsChanged || layoutChanged) {
                 this.createEmptyFont();
             }
         }
@@ -637,28 +678,25 @@ class FontEditor {
         this.hideFontInfo();
     }
 
+    updateLayoutControl() {
+        const width = parseInt(document.getElementById('width').value) || 0;
+        const layoutSelect = document.getElementById('layout');
+        const disableLayout = width <= 8;
+
+        if (disableLayout) {
+            layoutSelect.value = 'row';
+        }
+
+        layoutSelect.disabled = disableLayout;
+    }
+
     reverseBitsInGlyphs() {
-        const bytesPerRow = Math.ceil(this.width / 8);
         for (let g = 0; g < this.glyphs.length; g++) {
-            for (let row = 0; row < this.height; row++) {
-                for (let byteIdx = 0; byteIdx < bytesPerRow; byteIdx++) {
-                    const startBit = byteIdx * 8;
-                    let byte = 0;
-                    for (let bitPos = 0; bitPos < 8; bitPos++) {
-                        const x = startBit + bitPos;
-                        if (x < this.width && this.glyphs[g][row][x]) {
-                            byte |= (0x80 >> bitPos);
-                        }
-                    }
-                    const reversed = this.reverseByte(byte);
-                    for (let bitPos = 0; bitPos < 8; bitPos++) {
-                        const x = startBit + bitPos;
-                        if (x < this.width) {
-                            this.glyphs[g][row][x] = (reversed & (0x80 >> bitPos)) ? 1 : 0;
-                        }
-                    }
-                }
+            const glyphData = this.packGlyph(this.glyphs[g]);
+            for (let i = 0; i < glyphData.length; i++) {
+                glyphData[i] = this.reverseByte(glyphData[i]);
             }
+            this.glyphs[g] = this.unpackGlyph(glyphData);
         }
     }
 
@@ -682,28 +720,10 @@ class FontEditor {
         const glyphBytes = this.getGlyphBytes();
         const totalBytes = this.glyphs.length * glyphBytes;
         const fontData = new Uint8Array(totalBytes);
-        const bytesPerRow = Math.ceil(this.width / 8);
 
         for (let g = 0; g < this.glyphs.length; g++) {
             const glyphOffset = g * glyphBytes;
-
-            for (let row = 0; row < this.height; row++) {
-                for (let byteIdx = 0; byteIdx < bytesPerRow; byteIdx++) {
-                    let byte = 0;
-                    const startBit = byteIdx * 8;
-                    const endBit = Math.min(startBit + 8, this.width);
-
-                    // Pack pixels into byte (big-endian)
-                    for (let bit = startBit; bit < endBit; bit++) {
-                        const bitPos = bit - startBit;
-                        if (this.glyphs[g][row][bit]) {
-                            byte |= (0x80 >> bitPos);
-                        }
-                    }
-
-                    fontData[glyphOffset + row * bytesPerRow + byteIdx] = byte;
-                }
-            }
+            fontData.set(this.packGlyph(this.glyphs[g]), glyphOffset);
         }
 
         // Create download
@@ -797,6 +817,7 @@ class FontEditor {
         this.fontData = null;
         this.currentGlyph = 0;
         this.selectedPixel = { x: 0, y: 0 };
+        this.layout = 'row';
         this.reversedBits = false;
         this.selectedGlyphs = new Set([0]);
         this.selectionAnchor = 0;
@@ -868,11 +889,13 @@ class FontEditor {
         const width = params.get('width');
         const height = params.get('height');
         const offset = params.get('offset');
+        const layout = params.get('layout');
         const reversed = params.get('reversed');
 
         if (width) this.width = parseInt(width);
         if (height) this.height = parseInt(height);
         if (offset) this.offset = parseInt(offset);
+        if (layout === 'column') this.layout = 'column';
         if (reversed) {
             this.reversedBits = reversed === '1' || reversed.toLowerCase() === 'true';
         }

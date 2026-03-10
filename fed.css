@@ -218,7 +218,8 @@ footer a {
     margin-bottom: 10px;
 }
 
-.modal-content input {
+.modal-content input,
+.modal-content select {
     margin-left: 10px;
     padding: 4px;
     border: 1px solid #999;
