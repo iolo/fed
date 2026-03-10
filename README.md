@@ -95,9 +95,34 @@ Footer:Links,Copyright
 
 ## Examples
 
+Sample fonts are stored in `samples/`.
+
 Try these sample fonts:
 
-- [English Font (8x16)](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/master/eng.fnt)
-- [Korean Font (16x16)](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/master/kor.fnt&width=16&height=16)
-- [Apple II Video ROM (7x8)](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/master/a2.fnt&width=8&height=8) - MSB is not used.
-- [Apple IIe Enhanced Video ROM (7x8)](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/master/a2ee.fnt&width=8&height=8&reversed=1) - MSB is not used. Reversed bits
+- [English Font (8x16)](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/master/samples/eng.fnt)
+- [Korean Font (16x16)](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/master/samples/kor.fnt&width=16&height=16)
+- [Apple II Video ROM (7x8)](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/master/samples/a2.fnt&width=8&height=8) - MSB is not used.
+- [Apple IIe Enhanced Video ROM (7x8)](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/master/samples/a2ee.fnt&width=8&height=8&reversed=1) - MSB is not used. Reversed bits
+
+Reversed English samples (`*_ENG.fnt`, 8x16):
+
+- [HGKEY_ENG](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/master/samples/HGKEY_ENG.fnt&width=8&height=16&reversed=1)
+- [HLINK_ENG](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/master/samples/HLINK_ENG.fnt&width=8&height=16&reversed=1)
+- [MR128_ENG](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/master/samples/MR128_ENG.fnt&width=8&height=16&reversed=1)
+- [ROMAX_ENG](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/master/samples/ROMAX_ENG.fnt&width=8&height=16&reversed=1)
+- [SCRN9_ENG](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/master/samples/SCRN9_ENG.fnt&width=8&height=16&reversed=1)
+- [WCOMM_ENG](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/master/samples/WCOMM_ENG.fnt&width=8&height=16&reversed=1)
+- [WOORI_ENG](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/master/samples/WOORI_ENG.fnt&width=8&height=16&reversed=1)
+
+Reversed column-major Korean samples (`*_HAN.fnt`, 16x16):
+
+- [HLINK_HAN](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/master/samples/HLINK_HAN.fnt&width=16&height=16&layout=column&reversed=1)
+- [JOONG_HAN](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/master/samples/JOONG_HAN.fnt&width=16&height=16&layout=column&reversed=1)
+- [MR128_HAN](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/master/samples/MR128_HAN.fnt&width=16&height=16&layout=column&reversed=1)
+- [ROMAX_HAN](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/master/samples/ROMAX_HAN.fnt&width=16&height=16&layout=column&reversed=1)
+- [ROMAX_HAN2](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/master/samples/ROMAX_HAN2.fnt&width=16&height=16&layout=column&reversed=1)
+- [SCRN9_HAN](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/master/samples/SCRN9_HAN.fnt&width=16&height=16&layout=column&reversed=1)
+- [SCRN9_HAN2](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/master/samples/SCRN9_HAN2.fnt&width=16&height=16&layout=column&reversed=1)
+- [WCOMM_HAN](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/master/samples/WCOMM_HAN.fnt&width=16&height=16&layout=column&reversed=1)
+- [WOORI_HAN](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/master/samples/WOORI_HAN.fnt&width=16&height=16&layout=column&reversed=1)
+- [WOORI_HAN2](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/master/samples/WOORI_HAN2.fnt&width=16&height=16&layout=column&reversed=1)
