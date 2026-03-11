@@ -97,6 +97,27 @@ class FontEditor {
         return this.fontData ? new Uint8Array(this.fontData) : null;
     }
 
+    hasGlyphs() {
+        return Array.isArray(this.glyphs) && this.glyphs.length > 0;
+    }
+
+    resetSelectionState() {
+        this.selectedPixel = { x: 0, y: 0 };
+        this.editMode = false;
+
+        if (this.hasGlyphs()) {
+            const clamped = Math.max(0, Math.min(this.currentGlyph, this.glyphs.length - 1));
+            this.currentGlyph = clamped;
+            this.selectedGlyphs = new Set([clamped]);
+            this.selectionAnchor = clamped;
+            return;
+        }
+
+        this.currentGlyph = 0;
+        this.selectedGlyphs = new Set();
+        this.selectionAnchor = null;
+    }
+
     captureState() {
         return {
             fontData: this.cloneFontData(),
@@ -123,7 +144,7 @@ class FontEditor {
         this.offset = state.offset;
         this.layout = state.layout;
         this.reversedBits = state.reversedBits;
-        this.currentGlyph = Math.max(0, Math.min(state.currentGlyph, this.glyphs.length - 1));
+        this.currentGlyph = state.currentGlyph || 0;
         this.selectedPixel = {
             x: Math.max(0, Math.min(state.selectedPixel.x, this.width - 1)),
             y: Math.max(0, Math.min(state.selectedPixel.y, this.height - 1))
@@ -133,11 +154,19 @@ class FontEditor {
             state.selectedGlyphs
                 .filter((index) => index >= 0 && index < this.glyphs.length)
         );
-        if (this.selectedGlyphs.size === 0) {
-            this.selectedGlyphs.add(this.currentGlyph);
-        }
-        this.selectionAnchor = Math.max(0, Math.min(state.selectionAnchor, this.glyphs.length - 1));
+        this.selectionAnchor = state.selectionAnchor;
         this.clipboardGlyphs = state.clipboardGlyphs.map((glyph) => this.cloneGlyph(glyph));
+        if (this.hasGlyphs()) {
+            this.currentGlyph = Math.max(0, Math.min(this.currentGlyph, this.glyphs.length - 1));
+            if (this.selectedGlyphs.size === 0) {
+                this.selectedGlyphs.add(this.currentGlyph);
+            }
+            this.selectionAnchor = Math.max(0, Math.min(this.selectionAnchor ?? this.currentGlyph, this.glyphs.length - 1));
+        } else {
+            this.selectedGlyphs = new Set();
+            this.selectionAnchor = null;
+            this.editMode = false;
+        }
         this.refreshUI();
     }
 
@@ -183,6 +212,9 @@ class FontEditor {
     }
 
     getSelectedGlyphIndices() {
+        if (!this.hasGlyphs()) {
+            return [];
+        }
         if (!this.selectedGlyphs || this.selectedGlyphs.size === 0) {
             return [this.currentGlyph];
         }
@@ -217,10 +249,7 @@ class FontEditor {
             this.reversedBits = false;
             this.parseFontData();
             this.currentGlyph = 0;
-            this.selectedPixel = { x: 0, y: 0 };
-            this.editMode = false;
-            this.selectedGlyphs = new Set([0]);
-            this.selectionAnchor = 0;
+            this.resetSelectionState();
             this.undoStack.push(previousState);
             if (this.undoStack.length > this.maxHistorySize) {
                 this.undoStack.shift();
@@ -384,6 +413,7 @@ class FontEditor {
     }
 
     selectGlyph(index) {
+        if (!this.hasGlyphs()) return;
         this.currentGlyph = index;
         this.selectionAnchor = index;
         this.selectedGlyphs = new Set([index]);
@@ -391,9 +421,13 @@ class FontEditor {
     }
 
     togglePixel(x, y) {
+        const currentGlyph = this.glyphs[this.currentGlyph];
+        if (!currentGlyph || !currentGlyph[y] || currentGlyph[y][x] === undefined) {
+            return;
+        }
         this.pushUndoState();
         this.selectedPixel = { x, y };
-        this.glyphs[this.currentGlyph][y][x] = 1 - this.glyphs[this.currentGlyph][y][x];
+        currentGlyph[y][x] = 1 - currentGlyph[y][x];
         this.refreshUI();
     }
 
@@ -420,6 +454,7 @@ class FontEditor {
     }
 
     moveGlyphSelection(target, extend) {
+        if (!this.hasGlyphs()) return;
         const clamped = Math.max(0, Math.min(this.glyphs.length - 1, target));
         if (extend) {
             if (this.selectionAnchor === null || this.selectionAnchor === undefined) {
@@ -434,6 +469,7 @@ class FontEditor {
     }
 
     toggleGlyphSelection(index) {
+        if (!this.hasGlyphs()) return;
         if (this.selectedGlyphs.has(index)) {
             this.selectedGlyphs.delete(index);
         } else {
@@ -533,6 +569,10 @@ class FontEditor {
             const key = e.key.toLowerCase();
             if (key === 'c') {
                 const indices = this.getSelectedGlyphIndices();
+                if (indices.length === 0) {
+                    e.preventDefault();
+                    return;
+                }
                 this.clipboardGlyphs = indices.map((i) => this.cloneGlyph(this.glyphs[i]));
                 this.selectedGlyphs = new Set([this.currentGlyph]);
                 this.selectionAnchor = this.currentGlyph;
@@ -541,8 +581,12 @@ class FontEditor {
                 return;
             }
             if (key === 'x') {
-                this.pushUndoState();
                 const indices = this.getSelectedGlyphIndices();
+                if (indices.length === 0) {
+                    e.preventDefault();
+                    return;
+                }
+                this.pushUndoState();
                 this.clipboardGlyphs = indices.map((i) => this.cloneGlyph(this.glyphs[i]));
                 indices.forEach((i) => {
                     this.glyphs[i] = this.createEmptyGlyph();
@@ -632,9 +676,11 @@ class FontEditor {
                 e.preventDefault();
                 break;
             case 'Enter':
-                this.editMode = true;
-                this.renderGlyphEditor();
-                this.updateActivePanel();
+                if (this.hasGlyphs()) {
+                    this.editMode = true;
+                    this.renderGlyphEditor();
+                    this.updateActivePanel();
+                }
                 e.preventDefault();
                 break;
             case 'Escape':
@@ -647,6 +693,10 @@ class FontEditor {
             case 'x':
             case 'X':
                 if (!this.editMode) {
+                    if (!this.hasGlyphs()) {
+                        e.preventDefault();
+                        break;
+                    }
                     this.pushUndoState();
                     if (this.glyphs.length > 1) {
                         this.glyphs.splice(this.currentGlyph, 1);
@@ -794,14 +844,7 @@ class FontEditor {
             } else if (dimensionsChanged) {
                 this.createEmptyFont();
             }
-
-            this.currentGlyph = Math.max(0, Math.min(this.currentGlyph, this.glyphs.length - 1));
-            this.selectedPixel = {
-                x: Math.max(0, Math.min(this.selectedPixel.x, this.width - 1)),
-                y: Math.max(0, Math.min(this.selectedPixel.y, this.height - 1))
-            };
-            this.selectedGlyphs = new Set([this.currentGlyph]);
-            this.selectionAnchor = this.currentGlyph;
+            this.resetSelectionState();
         }
 
         this.refreshUI();
@@ -1059,10 +1102,7 @@ class FontEditor {
             }
             this.parseFontData();
             this.currentGlyph = 0;
-            this.selectedPixel = { x: 0, y: 0 };
-            this.editMode = false;
-            this.selectedGlyphs = new Set([0]);
-            this.selectionAnchor = 0;
+            this.resetSelectionState();
             this.undoStack.push(previousState);
             if (this.undoStack.length > this.maxHistorySize) {
                 this.undoStack.shift();
