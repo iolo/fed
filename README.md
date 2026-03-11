@@ -20,6 +20,7 @@ Bitmap Font Editor
 - Open fonts from URL using query params (`url`, `width`, `height`, `offset`, `layout`, `reversed`)
 - Export PNG font sheets (grid, scale, gaps, colors)
 - Browse glyphs in a zoomable grid and edit pixels in a zoomable editor
+- Full-snapshot undo/redo for edit and document-changing operations
 
 ## Keyboard Shortcuts
 
@@ -36,6 +37,10 @@ Bitmap Font Editor
   - Ctrl/Cmd + C: copy selected glyphs
   - Ctrl/Cmd + X: cut selected glyphs
   - Ctrl/Cmd + V: paste clipboard starting at current glyph
+- History
+  - Ctrl/Cmd + Z: undo
+  - Ctrl/Cmd + Shift + Z: redo
+  - Ctrl/Cmd + Y: redo
 - Edit mode (glyph editor)
   - Arrow keys / HJKL / WASD: move pixel cursor
   - Space: toggle pixel
@@ -56,6 +61,8 @@ Bitmap Font Editor
         - New
         - Open
         - Save
+        - Undo
+        - Redo
         - Export
         - Font Info
         - About
@@ -77,6 +84,12 @@ Bitmap Font Editor
   - count (read only)
     - `(filesize - offset) / (ceil(width/8) * height)`
   - reversed bits (checkbox; default=off; read/write)
+
+## Undo / Redo Scope
+
+- Undo and redo use full editor snapshots rather than per-action diffs.
+- Covered operations: pixel toggle, cut, paste, insert glyph, delete glyph, new font, file load, and Font Info changes that rebuild font data.
+- Not included: selection-only changes, mode switches, and zoom changes.
 
 ```
 Header:Title&Toolbar

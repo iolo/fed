@@ -70,6 +70,17 @@ button:active {
     box-shadow: inset 1px 1px 0px #404040, inset -1px -1px 0px #dfdfdf;
 }
 
+button:disabled {
+    color: #666;
+    background: #d4d0c8;
+    cursor: default;
+    border-top: 2px solid #f0f0f0;
+    border-left: 2px solid #f0f0f0;
+    border-right: 2px solid #9a9a9a;
+    border-bottom: 2px solid #9a9a9a;
+    box-shadow: inset 1px 1px 0px #efefef, inset -1px -1px 0px #777;
+}
+
 main {
     flex: 1;
     display: flex;
