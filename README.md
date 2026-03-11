@@ -106,7 +106,6 @@ Try these sample fonts:
 
 Reversed English samples (`*_ENG.fnt`, 8x16):
 
-- [HGKEY_ENG](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/HGKEY_ENG.fnt&width=8&height=16&reversed=1)
 - [HLINK_ENG](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/HLINK_ENG.fnt&width=8&height=16&reversed=1)
 - [MR128_ENG](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/MR128_ENG.fnt&width=8&height=16&reversed=1)
 - [ROMAX_ENG](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/ROMAX_ENG.fnt&width=8&height=16&reversed=1)
@@ -116,6 +115,7 @@ Reversed English samples (`*_ENG.fnt`, 8x16):
 
 Reversed column-major Korean samples (`*_HAN.fnt`, 16x16):
 
+- [HGKEY_ENG](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/HGKEY_ENG.fnt&width=16&height=16&layout=column&reversed=1)
 - [HLINK_HAN](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/HLINK_HAN.fnt&width=16&height=16&layout=column&reversed=1)
 - [JOONG_HAN](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/JOONG_HAN.fnt&width=16&height=16&layout=column&reversed=1)
 - [MR128_HAN](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/MR128_HAN.fnt&width=16&height=16&layout=column&reversed=1)
