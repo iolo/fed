@@ -128,7 +128,7 @@ Reversed English samples (`*_ENG.fnt`, 8x16):
 
 Reversed column-major Korean samples (`*_HAN.fnt`, 16x16):
 
-- [HGKEY_ENG](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/HGKEY_ENG.fnt&width=16&height=16&layout=column&reversed=1)
+- [HGKEY_HAN](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/HGKEY_HAN.fnt&width=16&height=16&layout=column&reversed=1)
 - [HLINK_HAN](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/HLINK_HAN.fnt&width=16&height=16&layout=column&reversed=1)
 - [JOONG_HAN](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/JOONG_HAN.fnt&width=16&height=16&layout=column&reversed=1)
 - [MR128_HAN](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/MR128_HAN.fnt&width=16&height=16&layout=column&reversed=1)
