@@ -6,8 +6,36 @@ Bitmap Font Editor
 ## Tech Stack
 
 - modern browser html/javascript/css
-- no backend
-- no dependencies
+- Tauri 2 desktop shell (Rust)
+- no frontend framework
+
+## Development
+
+Install the JavaScript tooling once:
+
+```sh
+npm install
+```
+
+Run the browser version:
+
+```sh
+npm run serve
+```
+
+Run the desktop application in development mode:
+
+```sh
+npm run desktop:dev
+```
+
+Build native installers/bundles for the current platform:
+
+```sh
+npm run desktop:build
+```
+
+Tauri's platform prerequisites (Rust, system webview libraries, and platform build tools) must be installed. Desktop builds are written under `src-tauri/target/release/bundle/`.
 
 ## Manifesto
 

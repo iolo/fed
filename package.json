@@ -1,8 +1,16 @@
 {
   "name": "fed",
   "private": true,
+  "version": "0.1.0",
   "scripts": {
-    "serve": "npx serve .",
-    "open": "google-chrome http://127.0.0.1:3000/index.html"
+    "serve": "node scripts/serve.mjs",
+    "open": "google-chrome http://127.0.0.1:3000/index.html",
+    "build:web": "node scripts/prepare-dist.mjs",
+    "desktop:dev": "tauri dev",
+    "desktop:build": "tauri build",
+    "tauri": "tauri"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2.11.4"
   }
 }

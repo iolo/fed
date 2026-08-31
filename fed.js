@@ -11,6 +11,7 @@ class FontEditor {
         this.undoStack = [];
         this.redoStack = [];
         this.maxHistorySize = 100;
+        this.currentFileName = 'font.fnt';
 
         // Font parameters - will be detected/configurable
         this.offset = 0;
@@ -40,7 +41,7 @@ class FontEditor {
 
     initEventListeners() {
         document.getElementById('new').onclick = () => this.newFont();
-        document.getElementById('open').onclick = () => document.getElementById('fileinput').click();
+        document.getElementById('open').onclick = () => this.openFont();
         document.getElementById('fileinput').onchange = (e) => this.loadFont(e.target.files[0]);
         document.getElementById('save').onclick = () => this.saveFont();
         document.getElementById('undo').onclick = () => this.undo();
@@ -57,6 +58,10 @@ class FontEditor {
         document.getElementById('export-cancel').onclick = () => this.hideExportDialog();
 
         document.getElementById('about-close').onclick = () => this.hideAbout();
+
+        document.querySelectorAll('a[href^="http"]').forEach((link) => {
+            link.addEventListener('click', (event) => this.openExternalLink(event, link.href));
+        });
 
         document.addEventListener('keydown', (e) => this.handleKeyboard(e));
 
@@ -238,27 +243,59 @@ class FontEditor {
         return Math.ceil(this.width / 8);
     }
 
+    isDesktop() {
+        return Boolean(window.__TAURI__);
+    }
+
+    async openFont() {
+        if (!this.isDesktop()) {
+            document.getElementById('fileinput').click();
+            return;
+        }
+
+        try {
+            const path = await window.__TAURI__.dialog.open({
+                multiple: false,
+                directory: false,
+                filters: [{ name: 'Bitmap font', extensions: ['fnt', 'bin'] }]
+            });
+            if (!path) return;
+
+            const bytes = await window.__TAURI__.fs.readFile(path);
+            const fileName = path.split(/[\\/]/).pop() || 'font.fnt';
+            this.applyLoadedFont(bytes, fileName);
+        } catch (error) {
+            console.error('Failed to open font:', error);
+            alert(`Failed to open font: ${error}`);
+        }
+    }
+
     loadFont(file) {
         if (!file) return;
-        const previousState = this.captureState();
 
         const reader = new FileReader();
         reader.onload = (e) => {
-            this.fontData = new Uint8Array(e.target.result);
-            this.layout = 'row';
-            this.reversedBits = false;
-            this.parseFontData();
-            this.currentGlyph = 0;
-            this.resetSelectionState();
-            this.undoStack.push(previousState);
-            if (this.undoStack.length > this.maxHistorySize) {
-                this.undoStack.shift();
-            }
-            this.redoStack = [];
-            this.refreshUI();
-            this.showFontInfo();
+            this.applyLoadedFont(new Uint8Array(e.target.result), file.name);
         };
         reader.readAsArrayBuffer(file);
+    }
+
+    applyLoadedFont(bytes, fileName = 'font.fnt') {
+        const previousState = this.captureState();
+        this.fontData = new Uint8Array(bytes);
+        this.currentFileName = fileName;
+        this.layout = 'row';
+        this.reversedBits = false;
+        this.parseFontData();
+        this.currentGlyph = 0;
+        this.resetSelectionState();
+        this.undoStack.push(previousState);
+        if (this.undoStack.length > this.maxHistorySize) {
+            this.undoStack.shift();
+        }
+        this.redoStack = [];
+        this.refreshUI();
+        this.showFontInfo();
     }
 
     parseFontData() {
@@ -888,7 +925,7 @@ class FontEditor {
         return result & 0xff;
     }
 
-    saveFont() {
+    buildFontData() {
         // Convert glyphs back to Uint8Array
         const glyphBytes = this.getGlyphBytes();
         const totalBytes = this.glyphs.length * glyphBytes;
@@ -899,12 +936,46 @@ class FontEditor {
             fontData.set(this.packGlyph(this.glyphs[g]), glyphOffset);
         }
 
+        return fontData;
+    }
+
+    async saveFont() {
+        const fontData = this.buildFontData();
+
+        if (this.isDesktop()) {
+            try {
+                const path = await window.__TAURI__.dialog.save({
+                    defaultPath: this.currentFileName,
+                    filters: [{ name: 'Bitmap font', extensions: ['fnt', 'bin'] }]
+                });
+                if (!path) return;
+
+                await window.__TAURI__.fs.writeFile(path, fontData);
+                this.currentFileName = path.split(/[\\/]/).pop() || this.currentFileName;
+            } catch (error) {
+                console.error('Failed to save font:', error);
+                alert(`Failed to save font: ${error}`);
+            }
+            return;
+        }
+
+        const requestedFileName = window.prompt('Save font as:', this.currentFileName);
+        if (requestedFileName === null) return;
+
+        const fileName = requestedFileName.trim();
+        if (!fileName) {
+            alert('Please enter a filename.');
+            return;
+        }
+
+        this.currentFileName = fileName;
+
         // Create download
         const blob = new Blob([fontData], { type: 'application/octet-stream' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'font.fnt';
+        a.download = fileName;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -972,7 +1043,24 @@ class FontEditor {
         }
 
         // Download PNG
-        canvas.toBlob((blob) => {
+        canvas.toBlob(async (blob) => {
+            if (this.isDesktop()) {
+                try {
+                    const path = await window.__TAURI__.dialog.save({
+                        defaultPath: 'font.png',
+                        filters: [{ name: 'PNG image', extensions: ['png'] }]
+                    });
+                    if (path) {
+                        const bytes = new Uint8Array(await blob.arrayBuffer());
+                        await window.__TAURI__.fs.writeFile(path, bytes);
+                    }
+                } catch (error) {
+                    console.error('Failed to export PNG:', error);
+                    alert(`Failed to export PNG: ${error}`);
+                }
+                return;
+            }
+
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -989,6 +1077,7 @@ class FontEditor {
     newFont() {
         this.pushUndoState();
         this.fontData = null;
+        this.currentFileName = 'font.fnt';
         this.currentGlyph = 0;
         this.selectedPixel = { x: 0, y: 0 };
         this.editMode = false;
@@ -1007,6 +1096,17 @@ class FontEditor {
 
     hideAbout() {
         document.getElementById('about-modal').style.display = 'none';
+    }
+
+    async openExternalLink(event, url) {
+        if (!this.isDesktop()) return;
+
+        event.preventDefault();
+        try {
+            await window.__TAURI__.opener.openUrl(url);
+        } catch (error) {
+            console.error('Failed to open external link:', error);
+        }
     }
 
     updateActivePanel() {
@@ -1097,6 +1197,11 @@ class FontEditor {
             const arrayBuffer = await response.arrayBuffer();
             const previousState = this.captureState();
             this.fontData = new Uint8Array(arrayBuffer);
+            try {
+                this.currentFileName = new URL(url).pathname.split('/').pop() || 'font.fnt';
+            } catch {
+                this.currentFileName = 'font.fnt';
+            }
             if (this.reversedBits) {
                 this.reverseBitsInFontData();
             }
