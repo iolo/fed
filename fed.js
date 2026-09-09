@@ -18,7 +18,7 @@ class FontEditor {
         this.width = 8;
         this.height = 16;
         this.layout = 'row';
-        this.reversedBits = false;
+        this.apple2Mode = false;
 
         // UI sizing constants
         this.BASE_PIXEL_SIZE = 20;
@@ -52,7 +52,7 @@ class FontEditor {
         document.getElementById('fontinfo').onclick = () => this.showFontInfo();
         document.getElementById('fontinfo-ok').onclick = () => this.saveFontInfo();
         document.getElementById('fontinfo-cancel').onclick = () => this.hideFontInfo();
-        document.getElementById('width').oninput = () => this.updateLayoutControl();
+        document.getElementById('width').oninput = () => this.updateFontInfoControls();
 
         document.getElementById('export-ok').onclick = () => this.exportPNG();
         document.getElementById('export-cancel').onclick = () => this.hideExportDialog();
@@ -137,7 +137,7 @@ class FontEditor {
             height: this.height,
             offset: this.offset,
             layout: this.layout,
-            reversedBits: this.reversedBits
+            apple2Mode: this.apple2Mode
         };
     }
 
@@ -148,7 +148,7 @@ class FontEditor {
         this.height = state.height;
         this.offset = state.offset;
         this.layout = state.layout;
-        this.reversedBits = state.reversedBits;
+        this.apple2Mode = state.apple2Mode;
         this.currentGlyph = state.currentGlyph || 0;
         this.selectedPixel = {
             x: Math.max(0, Math.min(state.selectedPixel.x, this.width - 1)),
@@ -240,7 +240,7 @@ class FontEditor {
     }
 
     getBytesPerRow() {
-        return Math.ceil(this.width / 8);
+        return this.apple2Mode ? this.width / 7 : Math.ceil(this.width / 8);
     }
 
     isDesktop() {
@@ -285,7 +285,7 @@ class FontEditor {
         this.fontData = new Uint8Array(bytes);
         this.currentFileName = fileName;
         this.layout = 'row';
-        this.reversedBits = false;
+        this.apple2Mode = false;
         this.parseFontData();
         this.currentGlyph = 0;
         this.resetSelectionState();
@@ -319,12 +319,14 @@ class FontEditor {
                     ? byteIdx * this.height + y
                     : y * bytesPerRow + byteIdx;
                 const byte = glyphData[byteOffset] || 0;
-                const startBit = byteIdx * 8;
-                const endBit = Math.min(startBit + 8, this.width);
+                const pixelsPerByte = this.apple2Mode ? 7 : 8;
+                const startBit = byteIdx * pixelsPerByte;
+                const endBit = Math.min(startBit + pixelsPerByte, this.width);
 
                 for (let x = startBit; x < endBit; x++) {
                     const bitPos = x - startBit;
-                    glyph[y][x] = (byte & (0x80 >> bitPos)) ? 1 : 0;
+                    const mask = this.apple2Mode ? (1 << bitPos) : (0x80 >> bitPos);
+                    glyph[y][x] = (byte & mask) ? 1 : 0;
                 }
             }
         }
@@ -338,13 +340,14 @@ class FontEditor {
         for (let y = 0; y < this.height; y++) {
             for (let byteIdx = 0; byteIdx < bytesPerRow; byteIdx++) {
                 let byte = 0;
-                const startBit = byteIdx * 8;
-                const endBit = Math.min(startBit + 8, this.width);
+                const pixelsPerByte = this.apple2Mode ? 7 : 8;
+                const startBit = byteIdx * pixelsPerByte;
+                const endBit = Math.min(startBit + pixelsPerByte, this.width);
 
                 for (let x = startBit; x < endBit; x++) {
                     const bitPos = x - startBit;
                     if (glyph[y][x]) {
-                        byte |= (0x80 >> bitPos);
+                        byte |= this.apple2Mode ? (1 << bitPos) : (0x80 >> bitPos);
                     }
                 }
 
@@ -841,8 +844,8 @@ class FontEditor {
         document.getElementById('width').value = this.width;
         document.getElementById('height').value = this.height;
         document.getElementById('layout').value = this.layout;
-        document.getElementById('reversed-bits').checked = this.reversedBits;
-        this.updateLayoutControl();
+        document.getElementById('apple2-mode').checked = this.apple2Mode;
+        this.updateFontInfoControls();
         this.updateCount();
         document.getElementById('fontinfo-modal').style.display = 'block';
     }
@@ -856,25 +859,18 @@ class FontEditor {
         const newHeight = parseInt(document.getElementById('height').value);
         const newOffset = parseInt(document.getElementById('offset').value);
         const newLayout = newWidth <= 8 ? 'row' : document.getElementById('layout').value;
-        const newReversedBits = document.getElementById('reversed-bits').checked;
+        const newApple2Mode = newWidth % 7 === 0 && document.getElementById('apple2-mode').checked;
         const dimensionsChanged = newWidth !== this.width || newHeight !== this.height || newOffset !== this.offset;
         const layoutChanged = newLayout !== this.layout;
-        const reversedChanged = newReversedBits !== this.reversedBits;
+        const apple2ModeChanged = newApple2Mode !== this.apple2Mode;
 
-        if (dimensionsChanged || layoutChanged || reversedChanged) {
+        if (dimensionsChanged || layoutChanged || apple2ModeChanged) {
             this.pushUndoState();
             this.width = newWidth;
             this.height = newHeight;
             this.offset = newOffset;
             this.layout = newLayout;
-            if (reversedChanged) {
-                if (this.fontData) {
-                    this.reverseBitsInFontData();
-                } else {
-                    this.reverseBitsInGlyphs();
-                }
-                this.reversedBits = newReversedBits;
-            }
+            this.apple2Mode = newApple2Mode;
 
             if (this.fontData) {
                 this.parseFontData();
@@ -888,41 +884,22 @@ class FontEditor {
         this.hideFontInfo();
     }
 
-    updateLayoutControl() {
+    updateFontInfoControls() {
         const width = parseInt(document.getElementById('width').value) || 0;
         const layoutSelect = document.getElementById('layout');
+        const apple2Checkbox = document.getElementById('apple2-mode');
         const disableLayout = width <= 8;
+        const disableApple2 = width === 0 || width % 7 !== 0;
 
         if (disableLayout) {
             layoutSelect.value = 'row';
         }
+        if (disableApple2) {
+            apple2Checkbox.checked = false;
+        }
 
         layoutSelect.disabled = disableLayout;
-    }
-
-    reverseBitsInGlyphs() {
-        for (let g = 0; g < this.glyphs.length; g++) {
-            const glyphData = this.packGlyph(this.glyphs[g]);
-            for (let i = 0; i < glyphData.length; i++) {
-                glyphData[i] = this.reverseByte(glyphData[i]);
-            }
-            this.glyphs[g] = this.unpackGlyph(glyphData);
-        }
-    }
-
-    reverseBitsInFontData() {
-        for (let i = 0; i < this.fontData.length; i++) {
-            this.fontData[i] = this.reverseByte(this.fontData[i]);
-        }
-    }
-
-    reverseByte(byte) {
-        let result = 0;
-        for (let i = 0; i < 8; i++) {
-            result = (result << 1) | (byte & 1);
-            byte >>= 1;
-        }
-        return result & 0xff;
+        apple2Checkbox.disabled = disableApple2;
     }
 
     buildFontData() {
@@ -1082,7 +1059,7 @@ class FontEditor {
         this.selectedPixel = { x: 0, y: 0 };
         this.editMode = false;
         this.layout = 'row';
-        this.reversedBits = false;
+        this.apple2Mode = false;
         this.selectedGlyphs = new Set([0]);
         this.selectionAnchor = 0;
         this.createEmptyFont();
@@ -1163,14 +1140,16 @@ class FontEditor {
         const height = params.get('height');
         const offset = params.get('offset');
         const layout = params.get('layout');
+        const apple2 = params.get('apple2');
         const reversed = params.get('reversed');
 
         if (width) this.width = parseInt(width);
         if (height) this.height = parseInt(height);
         if (offset) this.offset = parseInt(offset);
         if (layout === 'column') this.layout = 'column';
-        if (reversed) {
-            this.reversedBits = reversed === '1' || reversed.toLowerCase() === 'true';
+        const apple2Value = params.has('apple2') ? apple2 : reversed;
+        if (this.width % 7 === 0 && apple2Value) {
+            this.apple2Mode = apple2Value === '1' || apple2Value.toLowerCase() === 'true';
         }
 
         // Try to load from URL
@@ -1201,9 +1180,6 @@ class FontEditor {
                 this.currentFileName = new URL(url).pathname.split('/').pop() || 'font.fnt';
             } catch {
                 this.currentFileName = 'font.fnt';
-            }
-            if (this.reversedBits) {
-                this.reverseBitsInFontData();
             }
             this.parseFontData();
             this.currentGlyph = 0;

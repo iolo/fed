@@ -25,7 +25,7 @@ fed is a client-side bitmap font editor built with plain HTML/CSS/JS. There is n
 1. File operations
    - New: create empty font
    - Open: load .fnt/.bin via file input or drag-drop
-   - Open from URL: `?url=...&width=8&height=16&offset=0&reversed=1`
+   - Open from URL: `?url=...&width=7&height=8&offset=0&apple2=1`
    - Save: export binary .fnt file
    - Export: generate PNG font sheets with configurable layout
 2. Font editing
@@ -48,6 +48,7 @@ fed is a client-side bitmap font editor built with plain HTML/CSS/JS. There is n
    - Range: 0.5x to 4.0x in 0.25x steps
 5. Font format support
    - Big-endian bit packing
+   - Apple II 7-pixel bytes with LSB-first pixels and ignored bit 7
    - Configurable file offset
    - Glyph count derived from file size
 

@@ -45,7 +45,7 @@ Tauri's platform prerequisites (Rust, system webview libraries, and platform bui
 ## Features
 
 - New/Open/Save bitmap fonts (.fnt/.bin) with configurable font info
-- Open fonts from URL using query params (`url`, `width`, `height`, `offset`, `layout`, `reversed`)
+- Open fonts from URL using query params (`url`, `width`, `height`, `offset`, `layout`, `apple2`)
 - Export PNG font sheets (grid, scale, gaps, colors)
 - Browse glyphs in a zoomable grid and edit pixels in a zoomable editor
 - Full-snapshot undo/redo for edit and document-changing operations
@@ -110,8 +110,12 @@ Tauri's platform prerequisites (Rust, system webview libraries, and platform bui
     - `row`: row-major byte order
     - `column`: column-major byte order across row byte groups
   - count (read only)
-    - `(filesize - offset) / (ceil(width/8) * height)`
-  - reversed bits (checkbox; default=off; read/write)
+    - Normal: `(filesize - offset) / (ceil(width/8) * height)`
+    - Apple II: `(filesize - offset) / ((width/7) * height)`
+  - Apple II byte format (checkbox; default=off; read/write)
+    - Available when width is a multiple of 7
+    - Each byte stores seven pixels, with bits 0 through 6 displayed left-to-right
+    - Bit 7 is ignored when reading and cleared when writing
 
 ## Undo / Redo Scope
 
@@ -142,28 +146,35 @@ Try these sample fonts:
 
 - [English Font (8x16)](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/eng.fnt)
 - [Korean Font (16x16)](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/kor.fnt&width=16&height=16)
-- [Apple II Video ROM (7x8)](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/a2.fnt&width=8&height=8) - MSB is not used.
-- [Apple IIe Enhanced Video ROM (7x8)](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/a2ee.fnt&width=8&height=8&reversed=1) - MSB is not used. Reversed bits
+- [Apple II Video ROM (7x8)](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/a2.fnt&width=8&height=8) - MSB is not used, but stored MSB-first.
+- [Apple IIe Enhanced Video ROM (7x8)](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/a2ee.fnt&width=7&height=8&apple2=1) - Seven pixels per byte, stored LSB-first.
 
-Reversed English samples (`*_ENG.fnt`, 8x16):
+Apple II English samples (7x16)
 
-- [HLINK_ENG](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/HLINK_ENG.fnt&width=8&height=16&reversed=1)
-- [MR128_ENG](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/MR128_ENG.fnt&width=8&height=16&reversed=1)
-- [ROMAX_ENG](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/ROMAX_ENG.fnt&width=8&height=16&reversed=1)
-- [SCRN9_ENG](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/SCRN9_ENG.fnt&width=8&height=16&reversed=1)
-- [WCOMM_ENG](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/WCOMM_ENG.fnt&width=8&height=16&reversed=1)
-- [WOORI_ENG](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/WOORI_ENG.fnt&width=8&height=16&reversed=1)
+- [HLINK_ENG](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/HLINK_ENG.fnt&width=7&height=16&apple2=1)
+- [MR128_ENG](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/MR128_ENG.fnt&width=7&height=16&apple2=1)
+- [ROMAX_ENG](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/ROMAX_ENG.fnt&width=7&height=16&apple2=1)
+- [SCRN9_ENG](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/SCRN9_ENG.fnt&width=7&height=16&apple2=1)
+- [WCOMM_ENG](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/WCOMM_ENG.fnt&width=7&height=16&apple2=1)
+- [WOORI_ENG](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/WOORI_ENG.fnt&width=7&height=16&apple2=1)
 
-Reversed column-major Korean samples (`*_HAN.fnt`, 16x16):
+Apple II Korean samples (14x16, column-major):
 
-- [HGKEY_HAN](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/HGKEY_HAN.fnt&width=16&height=16&layout=column&reversed=1)
-- [HLINK_HAN](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/HLINK_HAN.fnt&width=16&height=16&layout=column&reversed=1)
-- [JOONG_HAN](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/JOONG_HAN.fnt&width=16&height=16&layout=column&reversed=1)
-- [MR128_HAN](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/MR128_HAN.fnt&width=16&height=16&layout=column&reversed=1)
-- [ROMAX_HAN](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/ROMAX_HAN.fnt&width=16&height=16&layout=column&reversed=1)
-- [ROMAX_HAN2](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/ROMAX_HAN2.fnt&width=16&height=16&layout=column&reversed=1)
-- [SCRN9_HAN](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/SCRN9_HAN.fnt&width=16&height=16&layout=column&reversed=1)
-- [SCRN9_HAN2](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/SCRN9_HAN2.fnt&width=16&height=16&layout=column&reversed=1)
-- [WCOMM_HAN](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/WCOMM_HAN.fnt&width=16&height=16&layout=column&reversed=1)
-- [WOORI_HAN](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/WOORI_HAN.fnt&width=16&height=16&layout=column&reversed=1)
-- [WOORI_HAN2](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/WOORI_HAN2.fnt&width=16&height=16&layout=column&reversed=1)
+- [HGKEY_HAN](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/HGKEY_HAN.fnt&width=14&height=16&layout=column&apple2=1)
+- [HLINK_HAN](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/HLINK_HAN.fnt&width=14&height=16&layout=column&apple2=1)
+- [JOONG_HAN](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/JOONG_HAN.fnt&width=14&height=16&layout=column&apple2=1)
+- [MR128_HAN](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/MR128_HAN.fnt&width=14&height=16&layout=column&apple2=1)
+- [ROMAX_HAN](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/ROMAX_HAN.fnt&width=14&height=16&layout=column&apple2=1)
+- [ROMAX_HAN2](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/ROMAX_HAN2.fnt&width=14&height=16&layout=column&apple2=1)
+- [SCRN9_HAN](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/SCRN9_HAN.fnt&width=14&height=16&layout=column&apple2=1)
+- [SCRN9_HAN2](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/SCRN9_HAN2.fnt&width=14&height=16&layout=column&apple2=1)
+- [WCOMM_HAN](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/WCOMM_HAN.fnt&width=14&height=16&layout=column&apple2=1)
+- [WOORI_HAN](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/WOORI_HAN.fnt&width=14&height=16&layout=column&apple2=1)
+- [WOORI_HAN2](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/WOORI_HAN2.fnt&width=14&height=16&layout=column&apple2=1)
+
+Special Apple II sample (14x8)
+- [Golden Apple II Font (14x8)](https://iolo.kr/fed/?url=https://raw.githubusercontent.com/iolo/fed/main/samples/golden-14x8-apple2.fnt&width=14&height=8&apple2=1) - Fourteen pixels per row, stored as two Apple II bytes.
+
+
+---
+Apple II Forever!

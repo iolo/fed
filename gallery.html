@@ -172,7 +172,8 @@
                     const link = document.createElement('a');
                     link.className = 'font-link';
                     const layoutParam = font.layout ? `&layout=${encodeURIComponent(font.layout)}` : '';
-                    link.href = `index.html?url=${encodeURIComponent(font.url)}&width=${font.width}&height=${font.height}&offset=${font.offset}${layoutParam}`;
+                    const apple2Param = font.apple2 ? '&apple2=1' : '';
+                    link.href = `index.html?url=${encodeURIComponent(font.url)}&width=${font.width}&height=${font.height}&offset=${font.offset}${layoutParam}${apple2Param}`;
                     link.textContent = fontName;
                     
                     const info = document.createElement('span');
