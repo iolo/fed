@@ -81,6 +81,14 @@ button:disabled {
     box-shadow: inset 1px 1px 0px #efefef, inset -1px -1px 0px #777;
 }
 
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+a:focus-visible {
+    outline: 2px dotted #000;
+    outline-offset: 2px;
+}
+
 main {
     flex: 1;
     display: flex;

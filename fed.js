@@ -12,6 +12,7 @@ class FontEditor {
         this.redoStack = [];
         this.maxHistorySize = 100;
         this.currentFileName = 'font.fnt';
+        this.modalReturnFocus = null;
 
         // Font parameters - will be detected/configurable
         this.offset = 0;
@@ -638,10 +639,75 @@ class FontEditor {
         return columns > 0 ? columns : 16; // fallback to 16 if calculation fails
     }
 
+    getOpenModal() {
+        return Array.from(document.querySelectorAll('.modal'))
+            .find((modal) => modal.style.display === 'block') || null;
+    }
+
+    getModalFocusableElements(modal) {
+        return Array.from(modal.querySelectorAll(
+            'button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href]'
+        ));
+    }
+
+    handleModalKeyboard(e, modal) {
+        if (e.key === 'Escape') {
+            if (modal.id === 'fontinfo-modal') this.hideFontInfo();
+            if (modal.id === 'export-modal') this.hideExportDialog();
+            if (modal.id === 'about-modal') this.hideAbout();
+            e.preventDefault();
+            return;
+        }
+
+        if (e.key !== 'Tab') return;
+
+        const focusable = this.getModalFocusableElements(modal);
+        if (focusable.length === 0) {
+            e.preventDefault();
+            return;
+        }
+
+        const currentIndex = focusable.indexOf(document.activeElement);
+        const targetIndex = e.shiftKey ? focusable.length - 1 : 0;
+        const shouldWrap = currentIndex === -1
+            || (!e.shiftKey && currentIndex === focusable.length - 1)
+            || (e.shiftKey && currentIndex === 0);
+
+        if (shouldWrap) {
+            focusable[targetIndex].focus();
+            e.preventDefault();
+        }
+    }
+
+    showModal(modalId, initialFocusId) {
+        const modal = document.getElementById(modalId);
+        this.modalReturnFocus = document.activeElement;
+        modal.style.display = 'block';
+
+        const initialFocus = document.getElementById(initialFocusId)
+            || this.getModalFocusableElements(modal)[0];
+        if (initialFocus) initialFocus.focus();
+    }
+
+    hideModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+
+        if (this.modalReturnFocus && document.contains(this.modalReturnFocus)) {
+            this.modalReturnFocus.focus();
+        }
+        this.modalReturnFocus = null;
+    }
+
     handleKeyboard(e) {
-        const modals = document.querySelectorAll('.modal');
-        const isModalOpen = Array.from(modals).some((modal) => modal.style.display === 'block');
-        if (isModalOpen) return;
+        const openModal = this.getOpenModal();
+        if (openModal) {
+            this.handleModalKeyboard(e, openModal);
+            return;
+        }
+
+        if (e.target.matches('button, input, select, textarea, a, [contenteditable="true"]')) {
+            return;
+        }
 
         if (e.ctrlKey || e.metaKey) {
             const key = e.key.toLowerCase();
@@ -936,11 +1002,11 @@ class FontEditor {
         document.getElementById('apple2-mode').checked = this.apple2Mode;
         this.updateFontInfoControls();
         this.updateCount();
-        document.getElementById('fontinfo-modal').style.display = 'block';
+        this.showModal('fontinfo-modal', 'offset');
     }
 
     hideFontInfo() {
-        document.getElementById('fontinfo-modal').style.display = 'none';
+        this.hideModal('fontinfo-modal');
     }
 
     saveFontInfo() {
@@ -1049,11 +1115,11 @@ class FontEditor {
     }
 
     showExportDialog() {
-        document.getElementById('export-modal').style.display = 'block';
+        this.showModal('export-modal', 'glyphs-per-row');
     }
 
     hideExportDialog() {
-        document.getElementById('export-modal').style.display = 'none';
+        this.hideModal('export-modal');
     }
 
     exportPNG() {
@@ -1157,11 +1223,11 @@ class FontEditor {
     }
 
     showAbout() {
-        document.getElementById('about-modal').style.display = 'block';
+        this.showModal('about-modal', 'about-close');
     }
 
     hideAbout() {
-        document.getElementById('about-modal').style.display = 'none';
+        this.hideModal('about-modal');
     }
 
     async openExternalLink(event, url) {

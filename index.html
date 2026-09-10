@@ -33,9 +33,9 @@
         <a href="https://github.com/iolo/fed">GitHub</a>
     </footer>
 
-    <div id="fontinfo-modal" class="modal">
+    <div id="fontinfo-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="fontinfo-title">
         <div class="modal-content">
-            <h3>Font Info</h3>
+            <h3 id="fontinfo-title">Font Info</h3>
             <div class="modal-body">
                 <label>Offset: <input type="number" id="offset" value="0" min="0"></label>
                 <label>Width: <input type="number" id="width" value="8" min="1" max="32"></label>
@@ -56,9 +56,9 @@
         </div>
     </div>
 
-    <div id="export-modal" class="modal">
+    <div id="export-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="export-title">
         <div class="modal-content">
-            <h3>Export PNG</h3>
+            <h3 id="export-title">Export PNG</h3>
             <div class="modal-body">
                 <label>Glyphs per row: <input type="number" id="glyphs-per-row" value="16" min="1" max="32"></label>
                 <label>Scale: <input type="number" id="export-scale" value="2" min="1" max="8"></label>
@@ -74,9 +74,9 @@
         </div>
     </div>
 
-    <div id="about-modal" class="modal">
+    <div id="about-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="about-title">
         <div class="modal-content">
-            <h3>About fed</h3>
+            <h3 id="about-title">About fed</h3>
             <div class="modal-body">
                 <p><strong>fed</strong> - Bitmap Font Editor</p>
                 <p>A simple, minimalistic font editor for retro computing.</p>
