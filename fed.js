@@ -361,10 +361,21 @@ class FontEditor {
         return glyphData;
     }
 
+    getBrowserBaseScale() {
+        return Math.max(1, Math.ceil(Math.min(16 / this.width, 32 / this.height)));
+    }
+
+    getBrowserPixelScale() {
+        return Math.max(1, Math.round(this.getBrowserBaseScale() * this.browserZoom));
+    }
+
     renderGlyphBrowser() {
         const browser = document.getElementById('glyphbrowser');
         browser.innerHTML = '<div class="glyph-grid"></div>';
         const grid = browser.querySelector('.glyph-grid');
+        const scale = this.getBrowserPixelScale();
+        const glyphWidth = this.width * scale;
+        const glyphHeight = this.height * scale;
 
         for (let i = 0; i < this.glyphs.length; i++) {
             const glyphDiv = document.createElement('div');
@@ -373,17 +384,14 @@ class FontEditor {
 
             // Create mini canvas for glyph preview with zoom
             const canvas = document.createElement('canvas');
-            const baseScale = Math.min(16 / this.width, 32 / this.height);
-            const scale = baseScale * this.browserZoom;
             canvas.width = this.width * scale;
             canvas.height = this.height * scale;
             const ctx = canvas.getContext('2d');
             ctx.imageSmoothingEnabled = false;
 
             // Update glyph div size based on zoom
-            const glyphSize = Math.max(this.BASE_GLYPH_SIZE, Math.min(this.width * scale, this.height * scale));
-            glyphDiv.style.width = glyphSize + 'px';
-            glyphDiv.style.height = Math.max(glyphSize, this.height * scale) + 'px';
+            glyphDiv.style.width = glyphWidth + 'px';
+            glyphDiv.style.height = glyphHeight + 'px';
 
             // Draw glyph
             ctx.fillStyle = '#000';
@@ -418,8 +426,7 @@ class FontEditor {
         }
 
         // Update grid template to accommodate zoom
-        const glyphSize = Math.max(this.BASE_GLYPH_SIZE * this.browserZoom, this.BASE_GLYPH_SIZE);
-        grid.style.gridTemplateColumns = `repeat(auto-fill, ${glyphSize}px)`;
+        grid.style.gridTemplateColumns = `repeat(auto-fill, ${glyphWidth}px)`;
     }
 
     renderGlyphEditor() {
@@ -471,13 +478,60 @@ class FontEditor {
         this.refreshUI();
     }
 
+    flipCurrentGlyphHorizontally() {
+        const glyph = this.glyphs[this.currentGlyph];
+        if (!glyph) return;
+
+        this.pushUndoState();
+        glyph.forEach((row) => row.reverse());
+        this.refreshUI();
+    }
+
+    flipCurrentGlyphVertically() {
+        const glyph = this.glyphs[this.currentGlyph];
+        if (!glyph) return;
+
+        this.pushUndoState();
+        glyph.reverse();
+        this.refreshUI();
+    }
+
+    shiftCurrentGlyph(direction) {
+        const glyph = this.glyphs[this.currentGlyph];
+        if (!glyph) return;
+
+        this.pushUndoState();
+        switch (direction) {
+            case 'left':
+                glyph.forEach((row) => {
+                    row.shift();
+                    row.push(0);
+                });
+                break;
+            case 'right':
+                glyph.forEach((row) => {
+                    row.pop();
+                    row.unshift(0);
+                });
+                break;
+            case 'up':
+                glyph.shift();
+                glyph.push(Array(this.width).fill(0));
+                break;
+            case 'down':
+                glyph.pop();
+                glyph.unshift(Array(this.width).fill(0));
+                break;
+        }
+        this.refreshUI();
+    }
+
     updateGlyphInBrowser(index) {
         const glyphElements = document.querySelectorAll('.glyph');
         const canvas = glyphElements[index].querySelector('canvas');
         const ctx = canvas.getContext('2d');
 
-        const baseScale = Math.min(16 / this.width, 32 / this.height);
-        const scale = baseScale * this.browserZoom;
+        const scale = this.getBrowserPixelScale();
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = '#000';
         for (let y = 0; y < this.height; y++) {
@@ -551,11 +605,13 @@ class FontEditor {
         const maxGlyphWidth = Math.floor(availableWidth / cols) - this.GAP_SIZE;
         const maxGlyphHeight = Math.floor(availableHeight / rows) - this.GAP_SIZE;
 
-        const baseScale = Math.min(16 / this.width, 32 / this.height);
-        const maxZoomWidth = maxGlyphWidth / (this.width * baseScale);
-        const maxZoomHeight = maxGlyphHeight / (this.height * baseScale);
+        const maxPixelScale = Math.max(1, Math.floor(Math.min(
+            maxGlyphWidth / this.width,
+            maxGlyphHeight / this.height
+        )));
+        const targetZoom = maxPixelScale / this.getBrowserBaseScale();
 
-        this.browserZoom = Math.max(this.minZoom, Math.min(this.maxZoom, Math.min(maxZoomWidth, maxZoomHeight)));
+        this.browserZoom = Math.max(this.minZoom, Math.min(this.maxZoom, targetZoom));
         this.renderGlyphBrowser();
     }
 
@@ -661,8 +717,12 @@ class FontEditor {
             case 'w':
             case 'W':
                 if (this.editMode) {
-                    this.selectedPixel.y = Math.max(0, this.selectedPixel.y - 1);
-                    this.renderGlyphEditor();
+                    if (e.key === 'ArrowUp' && e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                        this.shiftCurrentGlyph('up');
+                    } else {
+                        this.selectedPixel.y = Math.max(0, this.selectedPixel.y - 1);
+                        this.renderGlyphEditor();
+                    }
                 } else {
                     const cols = this.getGridColumns();
                     this.moveGlyphSelection(this.currentGlyph - cols, e.shiftKey);
@@ -675,8 +735,12 @@ class FontEditor {
             case 's':
             case 'S':
                 if (this.editMode) {
-                    this.selectedPixel.y = Math.min(this.height - 1, this.selectedPixel.y + 1);
-                    this.renderGlyphEditor();
+                    if (e.key === 'ArrowDown' && e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                        this.shiftCurrentGlyph('down');
+                    } else {
+                        this.selectedPixel.y = Math.min(this.height - 1, this.selectedPixel.y + 1);
+                        this.renderGlyphEditor();
+                    }
                 } else {
                     const cols = this.getGridColumns();
                     this.moveGlyphSelection(this.currentGlyph + cols, e.shiftKey);
@@ -689,8 +753,12 @@ class FontEditor {
             case 'a':
             case 'A':
                 if (this.editMode) {
-                    this.selectedPixel.x = Math.max(0, this.selectedPixel.x - 1);
-                    this.renderGlyphEditor();
+                    if (e.key === 'ArrowLeft' && e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                        this.shiftCurrentGlyph('left');
+                    } else {
+                        this.selectedPixel.x = Math.max(0, this.selectedPixel.x - 1);
+                        this.renderGlyphEditor();
+                    }
                 } else {
                     this.moveGlyphSelection(this.currentGlyph - 1, e.shiftKey);
                 }
@@ -702,8 +770,12 @@ class FontEditor {
             case 'd':
             case 'D':
                 if (this.editMode) {
-                    this.selectedPixel.x = Math.min(this.width - 1, this.selectedPixel.x + 1);
-                    this.renderGlyphEditor();
+                    if (e.key === 'ArrowRight' && e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                        this.shiftCurrentGlyph('right');
+                    } else {
+                        this.selectedPixel.x = Math.min(this.width - 1, this.selectedPixel.x + 1);
+                        this.renderGlyphEditor();
+                    }
                 } else {
                     this.moveGlyphSelection(this.currentGlyph + 1, e.shiftKey);
                 }
@@ -723,6 +795,14 @@ class FontEditor {
                 }
                 e.preventDefault();
                 break;
+            case 'Tab':
+                if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+                    this.editMode = this.hasGlyphs() && !this.editMode;
+                    this.renderGlyphEditor();
+                    this.updateActivePanel();
+                    e.preventDefault();
+                }
+                break;
             case 'Escape':
                 this.editMode = false;
                 this.renderGlyphEditor();
@@ -732,7 +812,9 @@ class FontEditor {
             case 'Delete':
             case 'x':
             case 'X':
-                if (!this.editMode) {
+                if (this.editMode && e.key.toLowerCase() === 'x' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                    this.flipCurrentGlyphHorizontally();
+                } else if (!this.editMode) {
                     if (!this.hasGlyphs()) {
                         e.preventDefault();
                         break;
@@ -756,6 +838,13 @@ class FontEditor {
                     this.refreshUI();
                 }
                 e.preventDefault();
+                break;
+            case 'y':
+            case 'Y':
+                if (this.editMode && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                    this.flipCurrentGlyphVertically();
+                    e.preventDefault();
+                }
                 break;
             case 'Insert':
             case 'i':

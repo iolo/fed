@@ -55,6 +55,7 @@ Tauri's platform prerequisites (Rust, system webview libraries, and platform bui
 - Mode
   - Enter: start editing current glyph
   - Esc: stop editing, return to browser
+  - Tab: toggle the active pane between the glyph browser and editor
 - Browse mode (glyph browser)
   - Arrow keys / HJKL / WASD: move current glyph
   - Shift + Arrow keys: extend selection range
@@ -72,6 +73,9 @@ Tauri's platform prerequisites (Rust, system webview libraries, and platform bui
 - Edit mode (glyph editor)
   - Arrow keys / HJKL / WASD: move pixel cursor
   - Space: toggle pixel
+  - X: flip glyph horizontally
+  - Y: flip glyph vertically
+  - Shift + Arrow keys: shift glyph one pixel with blank fill
 - Zoom
   - + / -: zoom active panel
   - Ctrl/Cmd + + / -: zoom both panels
